@@ -3,6 +3,9 @@ from flask import request,abort
 import mysql.connector
 import time
 import requests
+import json
+import mysql.connector
+
 from flask import  request
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
@@ -18,8 +21,9 @@ def train():
     else:
         abort(400)
     print(request.headers)
-    print(request.form)
-    #print(request.get_json())
+    print(request.json)
+
+
     return "hi"
 
 
@@ -51,4 +55,12 @@ def train():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.01", port=9876)
+    mydb = mysql.connector.connect(
+        host="localhost",
+        user="AP2_EX2",
+        password="RestApi"
+    )
+    mycursor = mydb.cursor()
+
+    mycursor.execute("CREATE DATABASE AP2_EX2")
+    app.run(host="127.0.01", port=9872)

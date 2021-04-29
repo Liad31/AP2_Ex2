@@ -1,13 +1,7 @@
 import requests
 
-url = 'http://127.0.0.1:9875/api/model?model_type=hybrid'
+url = 'http://127.0.0.1:9872/api/model?model_type=hybrid'
 
-params = dict(
-    origin='Chicago,IL',
-    destination='Los+Angeles,CA',
-    waypoints='Joplin,MO|Oklahoma+City,OK',
-    sensor='false'
-)
 
 data = {
         "train_data": {"air_speed": "[4,6,10]",
