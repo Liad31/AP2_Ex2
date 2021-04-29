@@ -4,7 +4,7 @@ import mysql.connector
 import time
 import requests
 import json
-import mysql.connector
+import pymongo
 
 from flask import  request
 app = flask.Flask(__name__)
@@ -55,12 +55,28 @@ def train():
 
 
 if __name__ == "__main__":
-    mydb = mysql.connector.connect(
-        host="localhost",
-        user="AP2_EX2",
-        password="RestApi"
-    )
-    mycursor = mydb.cursor()
+    myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 
-    mycursor.execute("CREATE DATABASE AP2_EX2")
-    app.run(host="127.0.01", port=9872)
+    mydb = myclient["AP2_EX2"]
+    mycol = mydb["customers"]
+    mydict = {"name": "John", "address": "Highway 37"}
+
+    x = mycol.insert_one(mydict)
+    mylist = [
+        {"name": "Amy", "address": "Apple st 652"},
+        {"name": "Hannah", "address": "Mountain 21"},
+        {"name": "Michael", "address": "Valley 345"},
+        {"name": "Sandy", "address": "Ocean blvd 2"},
+        {"name": "Betty", "address": "Green Grass 1"},
+        {"name": "Richard", "address": "Sky st 331"},
+        {"name": "Susan", "address": "One way 98"},
+        {"name": "Vicky", "address": "Yellow Garden 2"},
+        {"name": "Ben", "address": "Park Lane 38"},
+        {"name": "William", "address": "Central st 954"},
+        {"name": "Chuck", "address": "Main Road 989"},
+        {"name": "Viola", "address": "Sideway 1633"}
+    ]
+
+    x = mycol.insert_many(mylist)
+    print(x.inserted_ids)
+    app.run(host="127.0.0.1", port=9872)
