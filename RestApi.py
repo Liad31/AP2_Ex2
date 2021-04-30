@@ -10,11 +10,19 @@ from time import gmtime, strftime
 
 from flask import request
 from pymongo.results import InsertOneResult
+from werkzeug.utils import redirect
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 myclient = pymongo.MongoClient("mongodb+srv://Mist:1234@cluster0.uuxni.mongodb.net/AP2_EX2?retryWrites=true&w=majority")
 mydb = myclient["AP2_EX2"]
+
+def get_json_model_from_database(model):
+    return  {
+        'model_id': bytes(str(model["_id"]), 'utf-8'),
+        'upload_time': bytes(str(model["upload_time"]), 'utf-8'),
+        'status': bytes(str(model["status"]), 'utf-8')
+    }
 
 
 @app.route("/api/model", methods=['POST'])
@@ -57,6 +65,7 @@ def train():
     }
 
     x = models.insert_one(new_model)
+    #TODO: remeber, after you finish the learning process, delete the data document with that id from the "datas" db
 
     return jsonify(response_model), 200
 
@@ -71,7 +80,7 @@ def get_model():
 
     wanted_model = models.find(query)
     if (wanted_model.count() != 1):
-        abort(400)
+        abort(404)
     model = {
         'model_id': bytes(str(wanted_model[0]["_id"]), 'utf-8'),
         'upload_time': bytes(str(wanted_model[0]["upload_time"]), 'utf-8'),
@@ -92,11 +101,43 @@ def delete_model():
 
     wanted_model = models.delete_one(query)
     if (wanted_model.deleted_count != 1):
-        abort(400)
+        abort(404)
     datas.delete_one(query)
 
-    return ""
+    return ('', 204)
+
+
+@app.route("/api/models", methods=["GET"])
+def get_models():
+    models = mydb["models"]
+    all_models = models.find()
+    models_array = []
+    for model in all_models:
+        json_model = get_json_model_from_database(model)
+        models_array.append(json_model)
+    return jsonify(models_array), 200
+
+
+@app.route("/api/anomaly", methods=["POST"])
+def get_anomalies():
+    id = request.args.get('model_id')
+    if id == None:
+        abort(400)
+    models = mydb["models"]
+    query = {"_id": int(id)}
+
+    wanted_model = models.find(query)
+    if (wanted_model.count() != 1):
+        abort(404)
+    if (wanted_model[0]['status'] == "pending"):
+        return redirect("/api/model?model_id=" + str(id), 405)#TODO: decide if it does get and not post as writen in the document
+
+    anomaly_datas = mydb["anomaly_datas"]#TODO: predict the anomalies, and delete from the database unnecessary docu,ents at the end
+    request.json["_id"] = int(id) + 1
+    x = anomaly_datas.insert_one(request.json)
+
+    return  ""
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=9872)
+    app.run(host="127.0.0.1", port=9876)
