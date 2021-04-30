@@ -12,24 +12,29 @@ app.config["DEBUG"] = True
 myclient = pymongo.MongoClient("mongodb+srv://Mist:1234@cluster0.uuxni.mongodb.net/AP2_EX2?retryWrites=true&w=majority")
 mydb = myclient["AP2_EX2"]
 
-def trainModel(idNumber):
-    print("trained model num {idNumber}")
-    time.sleep(5)
+
+def trainmodel(id):
+    print(f"trained model num {id}")
     datas = mydb["datas"]
-    models=mydb["models"]
-    query = {"_id": int(idNumber)}
-    model=models.find(query)
-    model[0]["status"]="ready"
+    models = mydb["models"]
+    query = {"_id": int(id)}
+    newvalues = {"$set": {"status": "ready"}}
+    models.update_one(query, newvalues)
+    model = models.find(query)
+    print(model.count())
     datas.delete_one(query)
+
 
 threadPool = mp.Pool(2)
 
+
 def get_json_model_from_database(model):
-    return  {
+    return {
         'model_id': str(model["_id"]),
         'upload_time': str(model["upload_time"]),
         'status': str(model["status"])
     }
+
 
 
 @app.route("/api/model", methods=['POST'])
@@ -74,8 +79,11 @@ def train():
     }
 
     x = models.insert_one(new_model)
-    #TODO: remeber, after you finish the learning process, delete the data document with that id from the "datas" db
-    threadPool.apply_async(trainModel,(request.json["_id"]))
+    # TODO: remeber, after you finish the learning process, delete the data document with that id from the "datas" db
+
+
+    global threadPool
+    threadPool.map_async(trainmodel, ((request.json["_id"]),))
     return jsonify(response_model), 200
 
 
@@ -139,14 +147,15 @@ def get_anomalies():
     if (models.count_documents(query) != 1):
         abort(404)
     if (wanted_model[0]['status'] == "pending"):
-        return redirect("/api/model?model_id=" + str(id), 405)#TODO: decide if it does get and not post as writen in the document
+        return redirect("/api/model?model_id=" + str(id),
+                        405)  # TODO: decide if it does get and not post as writen in the document
 
-    anomaly_datas = mydb["anomaly_datas"]#TODO: predict the anomalies, and delete from the database unnecessary docu,ents at the end
+    anomaly_datas = mydb[
+        "anomaly_datas"]  # TODO: predict the anomalies, and delete from the database unnecessary docu,ents at the end
     request.json["_id"] = int(id) + 1
     x = anomaly_datas.insert_one(request.json)
 
-    return  ""
-
+    return ""
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=9870)
+    app.run(host="127.0.0.1", port=9876)
