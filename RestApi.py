@@ -1,14 +1,10 @@
 import flask
 from flask import request, abort, jsonify
 import time
-import requests
-import json
 import pymongo
 import datetime
-from time import gmtime, strftime
-
+from datetime import datetime, timezone
 from flask import request
-from pymongo.results import InsertOneResult
 from werkzeug.utils import redirect
 import multiprocessing as mp
 app = flask.Flask(__name__)
@@ -52,8 +48,11 @@ def train():
             isFirstTime = False
     datas = mydb["datas"]
 
-    output_date = datetime.datetime.now().strftime(
-        "%Y-%m-%dT%H:%M:%S+03.00")  # TODO: change +03.00 to our really time zone
+    now = datetime.now()
+    utc = now.replace(tzinfo=timezone.utc) - now.astimezone(timezone.utc)
+    SECONDS_IN_HOUR = 3600
+
+    output_date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+" + str(utc.seconds/SECONDS_IN_HOUR))  # TODO: change +03.00 to our really time zone
     if isFirstTime:
         request.json["_id"] = 1
     else:
