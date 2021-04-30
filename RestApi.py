@@ -1,6 +1,5 @@
 import flask
 from flask import request, abort, jsonify
-import mysql.connector
 import time
 import requests
 import json
@@ -11,17 +10,29 @@ from time import gmtime, strftime
 from flask import request
 from pymongo.results import InsertOneResult
 from werkzeug.utils import redirect
-
+import multiprocessing as mp
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 myclient = pymongo.MongoClient("mongodb+srv://Mist:1234@cluster0.uuxni.mongodb.net/AP2_EX2?retryWrites=true&w=majority")
 mydb = myclient["AP2_EX2"]
 
+def trainModel(idNumber):
+    print("trained model num {idNumber}")
+    time.sleep(5)
+    datas = mydb["datas"]
+    models=mydb["models"]
+    query = {"_id": int(idNumber)}
+    model=models.find(query)
+    model[0]["status"]="ready"
+    datas.delete_one(query)
+
+threadPool = mp.Pool(2)
+
 def get_json_model_from_database(model):
     return  {
-        'model_id': bytes(str(model["_id"]), 'utf-8'),
-        'upload_time': bytes(str(model["upload_time"]), 'utf-8'),
-        'status': bytes(str(model["status"]), 'utf-8')
+        'model_id': str(model["_id"]),
+        'upload_time': str(model["upload_time"]),
+        'status': str(model["status"])
     }
 
 
@@ -35,8 +46,7 @@ def train():
         isFirstTime = True
     else:
         models = mydb["models"]
-        all_models = models.find()
-        if all_models.count() == 0:
+        if models.count_documents({}) == 0:
             isFirstTime = True
         else:
             isFirstTime = False
@@ -59,14 +69,14 @@ def train():
         "type": modelType
     }
     response_model = {
-        'model_id': bytes(str(x.inserted_id), 'utf-8'),
-        'upload_time': bytes(output_date, 'utf-8'),
+        'model_id': str(x.inserted_id),
+        'upload_time': output_date,
         'status': 'pending'
     }
 
     x = models.insert_one(new_model)
     #TODO: remeber, after you finish the learning process, delete the data document with that id from the "datas" db
-
+    threadPool.apply_async(trainModel,(request.json["_id"]))
     return jsonify(response_model), 200
 
 
@@ -79,12 +89,12 @@ def get_model():
     query = {"_id": int(id)}
 
     wanted_model = models.find(query)
-    if (wanted_model.count() != 1):
+    if (models.count_documents(query) != 1):
         abort(404)
     model = {
-        'model_id': bytes(str(wanted_model[0]["_id"]), 'utf-8'),
-        'upload_time': bytes(str(wanted_model[0]["upload_time"]), 'utf-8'),
-        'status': bytes(str(wanted_model[0]["status"]), 'utf-8')
+        'model_id': str(wanted_model[0]["_id"]),
+        'upload_time': str(wanted_model[0]["upload_time"]),
+        'status': str(wanted_model[0]["status"])
     }
 
     return jsonify(model), 200
@@ -127,7 +137,7 @@ def get_anomalies():
     query = {"_id": int(id)}
 
     wanted_model = models.find(query)
-    if (wanted_model.count() != 1):
+    if (models.count_documents(query) != 1):
         abort(404)
     if (wanted_model[0]['status'] == "pending"):
         return redirect("/api/model?model_id=" + str(id), 405)#TODO: decide if it does get and not post as writen in the document
@@ -140,4 +150,4 @@ def get_anomalies():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=9876)
+    app.run(host="127.0.0.1", port=9870)
