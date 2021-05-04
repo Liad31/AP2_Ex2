@@ -14,6 +14,7 @@ app.config["DEBUG"] = True
 myclient = pymongo.MongoClient("mongodb+srv://Mist:1234@cluster0.uuxni.mongodb.net/AP2_EX2?retryWrites=true&w=majority")
 mydb = myclient["AP2_EX2"]
 
+
 def trainModel(idNumber):
     print("trained model num {idNumber}")
     time.sleep(5)
@@ -24,7 +25,6 @@ def trainModel(idNumber):
     model[0]["status"]="ready"
     datas.delete_one(query)
 
-threadPool = mp.Pool(20)
 
 def get_json_model_from_database(model):
     return  {
@@ -33,11 +33,11 @@ def get_json_model_from_database(model):
         'status': str(model["status"])
     }
 
-@app.route('/')
-def home_page():
-    modelsDB = mydb["models"]
-    models_list = modelsDB.find().sort("_id", -1)
-    return render_template('index.html', models=models_list)
+# @app.route('/')
+# def home_page():
+#     modelsDB = mydb["models"]
+#     models_list = modelsDB.find().sort("_id", -1)
+#     return render_template('index.html', models=models_list)
 
 @app.route("/api/model", methods=['POST'])
 def train():
@@ -152,8 +152,16 @@ def get_anomalies():
     request.json["_id"] = int(id) + 1
     x = anomaly_datas.insert_one(request.json)
 
-    return  ""
+    return ""
+
+
+@app.route("/")
+def home():
+    return render_template("index.html")
 
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=9883)
+
+
+threadPool = mp.Pool(20)
