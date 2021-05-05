@@ -21,11 +21,11 @@ def trainModel(idNumber):
     datas = mydb["datas"]
     models=mydb["models"]
     query = {"_id": int(idNumber)}
-    model=models.find(query)
-    model[0]["status"]="ready"
+    newvalues = {"$set": {"status": "ready"}}
+    models.update_one(query, newvalues)
     datas.delete_one(query)
 
-
+threadPool = mp.Pool(20)
 
 def get_json_model_from_database(model):
     return  {
@@ -163,6 +163,4 @@ def home():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=9880)
-
-threadPool = mp.Pool(20)
+    app.run(host="127.0.0.1", port=9885)
