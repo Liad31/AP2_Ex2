@@ -25,7 +25,6 @@ def trainModel(idNumber):
     model[0]["status"]="ready"
     datas.delete_one(query)
 
-threadPool = mp.Pool(20)
 
 
 def get_json_model_from_database(model):
@@ -165,3 +164,5 @@ def home():
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=9880)
+
+threadPool = mp.Pool(20)
