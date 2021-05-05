@@ -25,6 +25,8 @@ def trainModel(idNumber):
     model[0]["status"]="ready"
     datas.delete_one(query)
 
+threadPool = mp.Pool(20)
+
 
 def get_json_model_from_database(model):
     return  {
@@ -45,10 +47,11 @@ def train():
     if modelType != 'hybrid' and modelType != 'regression':
         abort(400)
     collist = mydb.list_collection_names()
+    models = mydb["models"]
+
     if "models" not in collist:
         isFirstTime = True
     else:
-        models = mydb["models"]
         if models.count_documents({}) == 0:
             isFirstTime = True
         else:
@@ -161,7 +164,4 @@ def home():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=9883)
-
-
-threadPool = mp.Pool(20)
+    app.run(host="127.0.0.1", port=9880)

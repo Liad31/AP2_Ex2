@@ -5,18 +5,33 @@ let currentModelSituation = "";
 
 function  init() {
   $.ajax({
-      type : "GET",
+    type : "GET",
 	  url : '/api/models',
 	  dataType: "json",
 	  contentType: 'application/json;charset=UTF-8',
 	  success: function (data) {
 		  render(data);
 		  }
-	  });
+    });
+    setInterval(function(){ 
+      $.ajax({
+        type : "GET",
+        url : '/api/models',
+        dataType: "json",
+        contentType: 'application/json;charset=UTF-8',
+        success: function (data) {
+          render(data);
+          }
+        });
+    }, 3000);//refresh the models every 3 second
+
 }
 
 function render(models) {
 	const list = document.getElementById("models");
+    while( list.firstChild ){
+      list.removeChild( list.firstChild );
+    }
     for (let model of models) {
     const node = document.createElement("li");
     const isPending = model.status=="pending" ? "list-group-item-danger":"list-group-item-success"
@@ -36,7 +51,12 @@ function render(models) {
 }
 
   function setSelected(model) {
-    if (currentModel == 0) {
+    if (model.target.getAttribute('status') == "pending") {
+        var snackBar = document.getElementById("snackbar");
+         snackBar.className = "show";
+         setTimeout(function(){ snackBar.className = snackBar.className.replace("show", ""); }, 5000);
+    }
+    else if (currentModel == 0) {
         currentModel = model.target.getElementsByTagName("text")[0].textContent;
         model.target.setAttribute('class', `list-group-item active`);
     }
