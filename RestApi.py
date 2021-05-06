@@ -34,12 +34,6 @@ def get_json_model_from_database(model):
         'status': str(model["status"])
     }
 
-# @app.route('/')
-# def home_page():
-#     modelsDB = mydb["models"]
-#     models_list = modelsDB.find().sort("_id", -1)
-#     return render_template('index.html', models=models_list)
-
 @app.route("/api/model", methods=['POST'])
 def train():
     modelType = request.args.get('model_type')
@@ -69,7 +63,6 @@ def train():
         request.json["_id"] = max[0]["_id"] + 1
 
     x = datas.insert_one(request.json)
-
     new_model = {
         "_id": x.inserted_id,
         "upload_time": output_date,
@@ -163,4 +156,4 @@ def home():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=9885)
+    app.run(host="127.0.0.1", port=9870)

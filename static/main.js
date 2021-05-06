@@ -1,4 +1,5 @@
 
+
 window.onload = init;
 let currentModel = 0;
 let currentModelSituation = "";
@@ -34,11 +35,15 @@ function render(models) {
     }
     for (let model of models) {
     const node = document.createElement("li");
-    const isPending = model.status=="pending" ? "list-group-item-danger":"list-group-item-success"
+    var isPending = model.status=="pending" ? "list-group-item-danger":"list-group-item-success"
 
     node.setAttribute('status', model.status);
-  	node.setAttribute('class', `list-group-item ${isPending}`);
-  	node.setAttribute('data-key', model.model_id);
+    node.setAttribute('data-key', model.model_id);
+    if (node.getAttribute('data-key') == currentModel) {
+      isPending = "list-group-item active";
+    }
+    node.setAttribute('class', `list-group-item ${isPending}`);
+
   	node.innerHTML = `
     	id: <text>${model.model_id}</text></br>
     	date: ${model.upload_time}</br>
@@ -99,6 +104,7 @@ function render(models) {
 }
 
 function trainClick() {
+    goalOfLoading = "train";
     let trainButton = document.getElementById("train");
     let findButton = document.getElementById("find");
 
@@ -113,6 +119,7 @@ function trainClick() {
 }
 
 function findClick() {
+    goalOfLoading = "detect";
     let findButton = document.getElementById("find");
     let trainButton = document.getElementById("train");
 
@@ -127,7 +134,37 @@ function findClick() {
 }
 
 var goalOfLoading = "";
+var chosenCSVFile;
 
+    async function CSVToJson(file) {
+        const text = await file.text();
+        var allTextLines = text.split(/\r\n|\n/);
+        var headers = allTextLines[0].split(',');
+        var table = new Array(headers.length);
+        for (var i = 0; i < table.length; i++) {
+          table[i] = [];
+        }
+
+        for (var i=1; i<allTextLines.length; i++) {
+            var data = allTextLines[i].split(',');
+            if (data.length == headers.length) {
+
+                for (var j=0; j<headers.length; j++) {
+                    table[j].push(data[j]);
+                }
+            }
+        }
+        var json = {};
+        for (var i = 0; i < headers.length - 1; i++) {
+               column= new Array(table[i].length);
+               for (var j = 0; j < table[i].length - 1; j++) {
+                    column[j] = table[i][j];
+               }
+               column[j] = table[i][j];
+               json[headers[i]] = column;
+        }
+        return json;
+     }
 
     function dragOverHandler(ev) {
         console.log('File(s) in drop zone');
@@ -136,7 +173,7 @@ var goalOfLoading = "";
         ev.preventDefault();
     }
 
-    function dropHandler(ev) {
+    async function dropHandler(ev) {
         console.log('File(s) dropped');
 
         // Prevent default behavior (Prevent file from being opened)
@@ -147,15 +184,49 @@ var goalOfLoading = "";
             for (var i = 0; i < ev.dataTransfer.items.length; i++) {
                 // If dropped items aren't files, reject them
                 if (ev.dataTransfer.items[i].kind === 'file') {
-
+                    chosenCSVFile = ev.dataTransfer.items[i].getAsFile();
                     var file = ev.dataTransfer.items[i].getAsFile();
-                    //file.name;                                                                                                 //TODO:
+                    if (chosenCSVFile.type != "text/csv") {
+                        alert("wrong file! not a csv file");
+                        return;
+                    }
+                    if (goalOfLoading == "train") {
+                        json = await CSVToJson(chosenCSVFile);
+                        $.ajax({
+                          type : "POST",
+                          url : '/api/model?model_type=hybrid',
+                          dataType: "json",
+                          contentType: 'application/json;charset=UTF-8',
+                          accept: 'application/json;charset=UTF-8',
+                          data: JSON.stringify({"train_data":  json }),
+                        });
+                    }
+                    else if (goalOfLoading=="detect") {
+                    if (currentModel == 0) {
+                            alert("please choose a model, no model was chosen");
+                            return;
+                        }
+                        json = await CSVToJson(chosenCSVFile);
+                        $.ajax({
+                          type : "POST",
+                          url : '/api/anomaly?model_id=' + currentModel.toString(),
+                          dataType: "json",
+                          contentType: 'application/json;charset=UTF-8',
+                          accept: 'application/json;charset=UTF-8',
+                          data: JSON.stringify({"predict_data":  json }),
+                        });
+                    }
+                    json = CSVToJson(chosenCSVFile);
                 }
             }
         } else {
             // Use DataTransfer interface to access the file(s)
             for (var i = 0; i < ev.dataTransfer.files.length; i++) {
-                ev.dataTransfer.files[i].name;                                                                       //TODO:
+                var file = ev.dataTransfer.files[i].name;
+                alert(file.type);
+                if (file.type != "text/csv") {
+                    alert("wrong file! not a csv file");
+                }
             }
         }
         // Pass event to removeDragData for cleanup
@@ -172,8 +243,4 @@ var goalOfLoading = "";
             // Use DataTransfer interface to remove the drag data
             ev.dataTransfer.clearData();
         }
-    }
-
-    function changeGoalOfFileLOading(ev, goal) {
-        goalOfLoading = goal;
     }
