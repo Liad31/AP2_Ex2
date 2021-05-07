@@ -1,20 +1,17 @@
-import clr
-import os
-
 from AnomalyDetection import SimpleAnomalyDetector,HybridAnomalyDetector, TimeSeries
 import pandas as pd
 import tempfile
 class AnomalyDetector():
-    def __init__(self, model, json):
-        df=pd.read_json(json)
+    def __init__(self, model, dict):
+        df=pd.DataFrame(dict)
         with tempfile.NamedTemporaryFile() as tmp:
             tmp.write(df.to_csv(index=False).encode())
             tmp.seek(0)
             model.learnNormal(TimeSeries(tmp.name))
             self.Model = model
 
-    def getAnomalySpan(self, json):
-        df=pd.read_json(json)
+    def getAnomalySpan(self, dict):
+        df=pd.DataFrame(dict)
         with tempfile.NamedTemporaryFile() as tmp:
             tmp.write(df.to_csv(index=False).encode())
             tmp.seek(0)
@@ -44,13 +41,13 @@ class AnomalyDetector():
 
 
 class LinearAnomalyDetector(AnomalyDetector):
-    def __init__(self, correctCsv):
+    def __init__(self, dict):
         model = SimpleAnomalyDetector()
-        super().__init__(model, correctCsv)
+        super().__init__(model, dict)
 
 
 class CircleAnomalyDetector(AnomalyDetector):
-    def __init__(self, correctCsv):
+    def __init__(self, dict):
         model = HybridAnomalyDetector()
-        super().__init__(model, correctCsv)
+        super().__init__(model, dict)
 
