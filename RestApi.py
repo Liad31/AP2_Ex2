@@ -126,6 +126,7 @@ def get_models():
     for model in all_models:
         json_model = get_json_model_from_database(model)
         models_array.append(json_model)
+    time.sleep(200)
     return jsonify(models_array), 200
 
 
@@ -156,4 +157,4 @@ def home():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=9870)
+    app.run(host="127.0.0.1", port=9882)
