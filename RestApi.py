@@ -8,23 +8,57 @@ from flask import request
 from werkzeug.utils import redirect
 import multiprocessing as mp
 from flask import render_template
-
+from AnomalyDetector import CircleAnomalyDetector,LinearAnomalyDetector
+import pickle
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 myclient = pymongo.MongoClient("mongodb+srv://Mist:1234@cluster0.uuxni.mongodb.net/AP2_EX2?retryWrites=true&w=majority")
 mydb = myclient["AP2_EX2"]
 
-
 def trainModel(idNumber):
-    print("trained model num {idNumber}")
-    time.sleep(5)
     datas = mydb["datas"]
     models=mydb["models"]
     query = {"_id": int(idNumber)}
-    newvalues = {"$set": {"status": "ready"}}
-    models.update_one(query, newvalues)
+    model=models.find(query)
+    if len(model)==0:
+        #model was probably deleted before we could train
+        print(f"model {idNumber} deleted before training started")
+        return
+    json=datas.find(query)["train_data"]
+    if model["type"]=="regression":
+        newModel=LinearAnomalyDetector(json)
+    else:
+        newModel=CircleAnomalyDetector(json)
+    if len(models.find(query)):
+        print(f"model {idNumber} deleted during training")
+        return
+    model["pickle"]=pickle.dumps(newModel,protocol=pickle.HIGHEST_PROTOCOL)
+    model[0]["status"]="ready"
     datas.delete_one(query)
+def getAnomalies(modelId,dataId):
+    models=mydb["models"]
+    samples=mydb["anomaly_datas"]
+    modelQuery={"_id": int(modelId)}
+    dataQuery={"_id": dataId}
+    modelJson=models.find(modelQuery)
+    model=pickle.loads(modelJson["pickle"])
+    json=samples.find(dataQuery)["predict_data"]
+    try:
+        res=model.getAnomalySpan(json)
+        jsonRes=jsonify(res)
+        return jsonify({"anomalies":jsonRes,"reason":{"correlated_features":model.getCorrelatedFeatures(),"algorithm":modelJson["type"]}})
+    except:
+        return "detection error"
+    finally:
+        samples.delete_one(dataQuery)
 
+# since map can only send one argument for a function we need to unpack both arguments
+# this is why this helper function is here
+def getAnomaliesHelper(args):
+    return getAnomalies(*args)
+
+models = mydb["models"]
+threadPool = mp.Pool(20)
 
 def get_json_model_from_database(model):
     return  {
@@ -33,17 +67,22 @@ def get_json_model_from_database(model):
         'status': str(model["status"])
     }
 
+@app.route('/')
+def home_page():
+    modelsDB = mydb["models"]
+    models_list = modelsDB.find().sort("_id", -1)
+    return render_template('index.html', models=models_list)
+
 @app.route("/api/model", methods=['POST'])
 def train():
     modelType = request.args.get('model_type')
     if modelType != 'hybrid' and modelType != 'regression':
         abort(400)
     collist = mydb.list_collection_names()
-    models = mydb["models"]
-
     if "models" not in collist:
         isFirstTime = True
     else:
+        models = mydb["models"]
         if models.count_documents({}) == 0:
             isFirstTime = True
         else:
@@ -60,13 +99,14 @@ def train():
     else:
         max = models.find().sort("_id", -1).limit(1)
         request.json["_id"] = max[0]["_id"] + 1
-
     x = datas.insert_one(request.json)
+
     new_model = {
         "_id": x.inserted_id,
         "upload_time": output_date,
         "status": "pending",
-        "type": modelType
+        "type": modelType,
+        "pickle": ""
     }
     response_model = {
         'model_id': str(x.inserted_id),
@@ -75,8 +115,7 @@ def train():
     }
 
     x = models.insert_one(new_model)
-    #TODO: remeber, after you finish the learning process, delete the data document with that id from the "datas" db
-    threadPool.apply_async(trainModel,(request.json["_id"]))
+    threadPool.map_async(trainModel,(request.json["_id"]))
     return jsonify(response_model), 200
 
 
@@ -125,7 +164,6 @@ def get_models():
     for model in all_models:
         json_model = get_json_model_from_database(model)
         models_array.append(json_model)
-    time.sleep(200)
     return jsonify(models_array), 200
 
 
@@ -140,20 +178,16 @@ def get_anomalies():
     wanted_model = models.find(query)
     if (models.count_documents(query) != 1):
         abort(404)
-    if (wanted_model[0]['status'] == "pending"):
+    if (wanted_model[0]["status"] == "pending"):
         return redirect("/api/model?model_id=" + str(id), 405)#TODO: decide if it does get and not post as writen in the document
 
-    anomaly_datas = mydb["anomaly_datas"]#TODO: predict the anomalies, and delete from the database unnecessary docu,ents at the end
-    request.json["_id"] = int(id) + 1
+    anomaly_datas = mydb["anomaly_datas"]
     x = anomaly_datas.insert_one(request.json)
+    dataId=x.inserted_id
+    res=threadPool.map(getAnomaliesHelper,zip([id],[dataId]))
 
-    return ""
-
-
-@app.route("/")
-def home():
-    return render_template("index.html")
+    return res
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=9882)
+    app.run(host="127.0.0.1", port=9883)
