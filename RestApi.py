@@ -1,6 +1,5 @@
 import flask
-from flask import request, abort, jsonify
-import time
+from flask import  abort, jsonify
 import pymongo
 import datetime
 from datetime import datetime, timezone
@@ -19,34 +18,28 @@ def trainModel(idNumber):
     datas = mydb["datas"]
     models=mydb["models"]
     query = {"_id": int(idNumber)}
-    model=models.find(query)
-    if len(model)==0:
-        #model was probably deleted before we could train
-        print(f"model {idNumber} deleted before training started")
-        return
-    json=datas.find(query)["train_data"]
+    model=models.find(query).limit(1)[0]
+    json=datas.find(query).next()["train_data"]
     if model["type"]=="regression":
         newModel=LinearAnomalyDetector(json)
     else:
         newModel=CircleAnomalyDetector(json)
-    if len(models.find(query)):
-        print(f"model {idNumber} deleted during training")
-        return
-    model["pickle"]=pickle.dumps(newModel,protocol=pickle.HIGHEST_PROTOCOL)
-    model[0]["status"]="ready"
+    models.update_one(
+    {"_id": idNumber}, {"$set":
+        {"status":"ready","pickle":pickle.dumps(newModel,protocol=pickle.HIGHEST_PROTOCOL) } # new value will be 42
+    })
     datas.delete_one(query)
 def getAnomalies(modelId,dataId):
     models=mydb["models"]
     samples=mydb["anomaly_datas"]
     modelQuery={"_id": int(modelId)}
     dataQuery={"_id": dataId}
-    modelJson=models.find(modelQuery)
+    modelJson=models.find(modelQuery).next()
     model=pickle.loads(modelJson["pickle"])
-    json=samples.find(dataQuery)["predict_data"]
+    json=samples.find(dataQuery).next()["predict_data"]
     try:
         res=model.getAnomalySpan(json)
-        jsonRes=jsonify(res)
-        return jsonify({"anomalies":jsonRes,"reason":{"correlated_features":model.getCorrelatedFeatures(),"algorithm":modelJson["type"]}})
+        return jsonify({"anomalies":res,"reason":{"correlated_features":str(model.getCorrelatedFeatures()),"algorithm":modelJson["type"]}})
     except:
         return "detection error"
     finally:
@@ -115,7 +108,7 @@ def train():
     }
 
     x = models.insert_one(new_model)
-    threadPool.map_async(trainModel,(request.json["_id"]))
+    threadPool.map(trainModel,(request.json["_id"],))
     return jsonify(response_model), 200
 
 
@@ -184,10 +177,10 @@ def get_anomalies():
     anomaly_datas = mydb["anomaly_datas"]
     x = anomaly_datas.insert_one(request.json)
     dataId=x.inserted_id
-    res=threadPool.map(getAnomaliesHelper,zip([id],[dataId]))
-
+    # res=threadPool.map(getAnomaliesHelper,zip([id],[dataId]))
+    res=getAnomalies(id,dataId)
     return res
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=9883)
+    app.run(host="127.0.0.1", port=5004)
