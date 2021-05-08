@@ -250,7 +250,7 @@ var goalOfLoading = "";
       const jsonObject = JSON.parse(jsonString);
       const tableObject = document.getElementById("train-table");
       const tableHeaders = document.getElementById("table-headers");
-      let numberOfRows = 2;
+      let numberOfRows = jsonObject[Object.keys(jsonObject)[0]].length;
       let arrayOfRows = [];
       //create rows(<tr> elements)
       for(let rowNUm = 0; rowNUm < numberOfRows; ++rowNUm)
