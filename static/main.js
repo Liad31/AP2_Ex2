@@ -108,14 +108,17 @@ var goalOfLoading = "";
         goalOfLoading = "train";
         let trainButton = document.getElementById("train");
         let findButton = document.getElementById("find");
+        let typesDiv = document.getElementById("types");
 
         if (findButton.classList.contains("active")) {
             findButton.classList.remove("active");
         }
         if (trainButton.classList.contains("active")) {
             trainButton.classList.remove("active");
+            typesDiv.classList.add("hidden");
         } else {
             trainButton.classList.add("active");
+            typesDiv.classList.remove("hidden");
         }
     }
 
@@ -123,6 +126,7 @@ var goalOfLoading = "";
         goalOfLoading = "detect";
         let findButton = document.getElementById("find");
         let trainButton = document.getElementById("train");
+        let typesDiv = document.getElementById("types");
 
         if (trainButton.classList.contains("active")) {
             trainButton.classList.remove("active");
@@ -131,6 +135,35 @@ var goalOfLoading = "";
             findButton.classList.remove("active");
         } else {
             findButton.classList.add("active");
+            typesDiv.classList.add("hidden");
+        }
+    }
+
+        function hybridClick() {
+        let hybridButton = document.getElementById("hybrid");
+        let regressionButton = document.getElementById("regression");
+
+        if (regressionButton.classList.contains("active")) {
+            regressionButton.classList.remove("active");
+        }
+        if (hybridButton.classList.contains("active")) {
+            hybridButton.classList.remove("active");
+        } else {
+            hybridButton.classList.add("active");
+        }
+    }
+
+    function regressionClick() {
+        let regressionButton = document.getElementById("regression");
+        let hybridButton = document.getElementById("hybrid");
+
+        if (hybridButton.classList.contains("active")) {
+            hybridButton.classList.remove("active");
+        }
+        if (regressionButton.classList.contains("active")) {
+            regressionButton.classList.remove("active");
+        } else {
+            regressionButton.classList.add("active");
         }
     }
 

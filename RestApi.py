@@ -25,7 +25,6 @@ def trainModel(idNumber):
     models.update_one(query, newvalues)
     datas.delete_one(query)
 
-threadPool = mp.Pool(20)
 
 def get_json_model_from_database(model):
     return  {
