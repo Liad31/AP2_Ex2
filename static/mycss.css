@@ -26,6 +26,10 @@
   width: 25%;
 }
 
+table, td, tr, th{
+  border: 1px solid black;
+}
+
 #myInput {
   background-image: url('/static/images/searchicon.png'); /* Add a search icon to input */
   background-position: 10px 12px; /* Position the search icon */
@@ -60,6 +64,11 @@
   However, delay the fade out process for 2.5 seconds */
   -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
   animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+#train-table{
+  margin-top: 29%;
+  margin-left: 2%;
 }
 
 /* Animations to fade the snackbar in and out */

@@ -208,7 +208,7 @@ var goalOfLoading = "";
 
     async function dropHandler(ev) {
         var chosenCSVFile;
-        console.log('File(s) dropped');
+        console.log('File(s) droppeaad');
 
         // Prevent default behavior (Prevent file from being opened)
         ev.preventDefault();
@@ -243,4 +243,34 @@ var goalOfLoading = "";
             // Use DataTransfer interface to remove the drag data
             ev.dataTransfer.clearData();
         }
+    }
+
+    function setTrainTable(jsonString)
+    {
+      const jsonObject = JSON.parse(jsonString);
+      const tableObject = document.getElementById("train-table");
+      const tableHeaders = document.getElementById("table-headers");
+      let numberOfRows = 2;
+      let arrayOfRows = [];
+      //create rows(<tr> elements)
+      for(let rowNUm = 0; rowNUm < numberOfRows; ++rowNUm)
+      {
+          let tableRow = document.createElement("tr");
+          arrayOfRows.push(tableRow);
+          tableObject.appendChild(tableRow);
+      }
+    
+      for(const property in jsonObject) {
+          //append properties to header
+          let newTableHeader = document.createElement("th");
+          newTableHeader.textContent = property;
+          tableHeaders.appendChild(newTableHeader);
+          for (let i = 0; i < numberOfRows; ++i)
+          {
+              //append properyValues to rows
+              let newRowValue = document.createElement("td");
+              newRowValue.textContent = jsonObject[property][i];
+              arrayOfRows[i].appendChild(newRowValue);
+          }
+      }
     }
