@@ -240,6 +240,8 @@ var goalOfLoading = "";
     }
 
     async function dropHandler(ev) {
+        let json = '{"a" : ["1", "2", "3", "4"], "b" : ["1", "2", "3"]}'
+        isJsonOfCSVFileValid(json);
         var chosenCSVFile;
         console.log('File(s) droppeaad');
 
@@ -306,4 +308,27 @@ var goalOfLoading = "";
               arrayOfRows[i].appendChild(newRowValue);
           }
       }
+    }
+
+    function isJsonOfCSVFileValid(jsonString)
+    {
+        const jsonObject = JSON.parse(jsonString);
+        const numberOfProperties = Object.keys(jsonObject).length;
+        if(numberOfProperties == 0)
+        {
+            return true;
+        }
+
+        let numberOfRows = jsonObject[Object.keys(jsonObject)[0]].length;
+        for(let i = 0; i < numberOfProperties; ++i)
+        {
+            if(jsonObject[Object.keys(jsonObject)[i]].length != numberOfRows)
+            {
+                alert("CSV FLIE NOT VALID!");
+                console.log("not valid");
+                return false;
+            }
+        }
+        console.log("valid");
+        return true;
     }
