@@ -240,8 +240,6 @@ var goalOfLoading = "";
     }
 
     async function dropHandler(ev) {
-        let json = '{"a" : ["1", "2", "3", "4"], "b" : ["1", "2", "3"]}'
-        isJsonOfCSVFileValid(json);
         var chosenCSVFile;
         console.log('File(s) droppeaad');
 
