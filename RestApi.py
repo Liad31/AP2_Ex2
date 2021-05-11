@@ -108,7 +108,7 @@ def train():
     }
 
     x = models.insert_one(new_model)
-    threadPool.map(trainModel,(request.json["_id"],))
+    threadPool.map_async(trainModel,(request.json["_id"],))
     return jsonify(response_model), 200
 
 
@@ -177,8 +177,7 @@ def get_anomalies():
     anomaly_datas = mydb["anomaly_datas"]
     x = anomaly_datas.insert_one(request.json)
     dataId=x.inserted_id
-    # res=threadPool.map(getAnomaliesHelper,zip([id],[dataId]))
-    res=getAnomalies(id,dataId)
+    res=threadPool.map(getAnomaliesHelper,zip([id],[dataId]))
     return res
 
 
