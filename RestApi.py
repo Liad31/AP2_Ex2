@@ -50,8 +50,10 @@ def getAnomalies(modelId,dataId):
 def getAnomaliesHelper(args):
     return getAnomalies(*args)
 
-models = mydb["models"]
-threadPool = mp.Pool(20)
+
+if __name__=="__main__":
+    models = mydb["models"]
+    threadPool = mp.Pool(20)
 
 def get_json_model_from_database(model):
     return  {
