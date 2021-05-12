@@ -17,16 +17,18 @@
     <input type="text" id="myInput" onkeyup="search(this)" placeholder="Search for names..">
     <ul class="list-group" id="models"></ul>
     <div class="buttonHolder">
-    <button type="button" class="btn btn-light" onclick="trainClick()" id="train">Train model</button>
-    <button type="button" class="btn btn-light" onclick="findClick()" id="find">Find anomalies</button>
+      <button type="button" class="btn btn-light" onclick="trainClick()" id="train">Train model</button>
+      <button type="button" class="btn btn-light" onclick="findClick()" id="find">Find anomalies</button>
     </div>
     <div id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" onclick="func(event);">
         <img src="../static/images/drag_drop.png" id="upload">
     </div>
     <div class="buttonHolder hidden" id="types">
-    <button type="button" class="btn btn-light" onclick="hybridClick()" id="hybrid">hybrid</button>
-    <button type="button" class="btn btn-light" onclick="regressionClick()" id="regression">regression</button>
+      <button type="button" class="btn btn-light" onclick="hybridClick()" id="hybrid">hybrid</button>
+      <button type="button" class="btn btn-light" onclick="regressionClick()" id="regression">regression</button>
     </div>
+    <button type="button" class="btn btn-light" onclick="submit()" id="submit">submit request</button>
+
   </div>
   <div id="snackbar">Warning! the model is pending</div>
 

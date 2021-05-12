@@ -2,8 +2,8 @@
 
 window.onload = init;
 let currentModel = 0;
-let currentModelSituation = "";
 var goalOfLoading = "";
+var CSVFile;
 
     function  init() {
       $.ajax({
@@ -140,6 +140,7 @@ var goalOfLoading = "";
     }
 
         function hybridClick() {
+        goalOfLoading = "train hybrid";
         let hybridButton = document.getElementById("hybrid");
         let regressionButton = document.getElementById("regression");
 
@@ -154,6 +155,7 @@ var goalOfLoading = "";
     }
 
     function regressionClick() {
+        goalOfLoading = "train regression";
         let regressionButton = document.getElementById("regression");
         let hybridButton = document.getElementById("hybrid");
 
@@ -210,8 +212,11 @@ var goalOfLoading = "";
             alert("wrong file! not a csv file");
             return;
         }
-        if (goalOfLoading == "train") {
-            json = await CSVToJson(chosenCSVFile);
+        json = await CSVToJson(chosenCSVFile);
+        if (isJsonOfCSVFileValid){
+            setTrainTable(json);
+        }
+        if (goalOfLoading == "train hybrid") {
             $.ajax({
               type : "POST",
               url : '/api/model?model_type=hybrid',
@@ -221,12 +226,21 @@ var goalOfLoading = "";
               data: JSON.stringify({"train_data":  json }),
             });
         }
+        else if (goalOfLoading == "train regression") {
+            $.ajax({
+              type : "POST",
+              url : '/api/model?model_type=regression',
+              dataType: "json",
+              contentType: 'application/json;charset=UTF-8',
+              accept: 'application/json;charset=UTF-8',
+              data: JSON.stringify({"train_data":  json }),
+            });
+        }
         else if (goalOfLoading=="detect") {
-        if (currentModel == 0) {
+            if (currentModel == 0) {
                 alert("please choose a model, no model was chosen");
                 return;
             }
-            json = await CSVToJson(chosenCSVFile);
             $.ajax({
               type : "POST",
               url : '/api/anomaly?model_id=' + currentModel.toString(),
@@ -236,7 +250,6 @@ var goalOfLoading = "";
               data: JSON.stringify({"predict_data":  json }),
             });
         }
-        json = CSVToJson(chosenCSVFile);
     }
 
     async function dropHandler(ev) {
@@ -251,15 +264,13 @@ var goalOfLoading = "";
             for (var i = 0; i < ev.dataTransfer.items.length; i++) {
                 // If dropped items aren't files, reject them
                 if (ev.dataTransfer.items[i].kind === 'file') {
-                    chosenCSVFile = ev.dataTransfer.items[i].getAsFile();
-                    handleFile(chosenCSVFile);
+                    CSVFile = ev.dataTransfer.items[i].getAsFile();
                 }
             }
         } else {
             // Use DataTransfer interface to access the file(s)
             for (var i = 0; i < ev.dataTransfer.files.length; i++) {
-                chosenCSVFile = ev.dataTransfer.files[i].name;
-                handleFile(chosenCSVFile);
+                CSVFile = ev.dataTransfer.files[i].name;
             }
         }
         // Pass event to removeDragData for cleanup
@@ -329,4 +340,8 @@ var goalOfLoading = "";
         }
         console.log("valid");
         return true;
+    }
+
+    function submit() {
+        handleFile(CSVFile);
     }
