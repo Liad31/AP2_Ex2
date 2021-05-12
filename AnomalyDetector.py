@@ -1,4 +1,4 @@
-from AnomalyDetection import SimpleAnomalyDetector,HybridAnomalyDetector, TimeSeries
+from AnomalyDetectionBinaries.AnomalyDetection import SimpleAnomalyDetector,HybridAnomalyDetector, TimeSeries
 import pandas as pd
 import tempfile
 class AnomalyDetector():
