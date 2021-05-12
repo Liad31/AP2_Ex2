@@ -6,14 +6,14 @@
 
 #drop_zone {
     border: 5px solid blue;
-    height: 30%;
+    height: 50%;
     background-color: aqua;
 }
 
 #upload{
-    width: 75%;
+    width: 65%;
     height: 100%;
-    margin-left: 12.5%;
+    margin-left: 17.5%;
 }
 
 .hidden {

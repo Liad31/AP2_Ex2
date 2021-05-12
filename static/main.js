@@ -214,7 +214,6 @@ var CSVFile;
         }
         json = await CSVToJson(chosenCSVFile);
         if (isJsonOfCSVFileValid(JSON.stringify(json))){
-             alert(JSON.stringify(json));
             setTrainTable(JSON.stringify(json));
         }
         if (goalOfLoading == "train hybrid") {
