@@ -1,12 +1,12 @@
 .list-group {
   overflow: scroll;
   width: 100%;
-  height: 300px;
+  height: 350px;
 }
 
 #drop_zone {
     border: 5px solid blue;
-    height: 25%;
+    height: 30%;
     background-color: aqua;
 }
 
@@ -73,6 +73,15 @@ table, td, tr, th{
   However, delay the fade out process for 2.5 seconds */
   -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
   animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+#submit{
+  width: 100%;
+  height: fit-content;
+  border: 1px solid brown;
+  color: black;
+  background-color: chocolate;
+  text-align: center;
 }
 
 #train-table{
