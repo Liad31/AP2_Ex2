@@ -213,8 +213,9 @@ var CSVFile;
             return;
         }
         json = await CSVToJson(chosenCSVFile);
-        if (isJsonOfCSVFileValid){
-            setTrainTable(json);
+        if (isJsonOfCSVFileValid(JSON.stringify(json))){
+             alert(JSON.stringify(json));
+            setTrainTable(JSON.stringify(json));
         }
         if (goalOfLoading == "train hybrid") {
             $.ajax({
