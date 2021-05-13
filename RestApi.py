@@ -7,7 +7,7 @@ from flask import request
 from werkzeug.utils import redirect
 import multiprocessing as mp
 from flask import render_template
-from AnomalyDetector import CircleAnomalyDetector,LinearAnomalyDetector
+#from AnomalyDetector import CircleAnomalyDetector,LinearAnomalyDetector
 import pickle
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
@@ -20,15 +20,15 @@ def trainModel(idNumber):
     query = {"_id": int(idNumber)}
     model=models.find(query).limit(1)[0]
     json=datas.find(query).next()["train_data"]
-    if model["type"]=="regression":
-        newModel=LinearAnomalyDetector(json)
-    else:
-        newModel=CircleAnomalyDetector(json)
-    models.update_one(
-    {"_id": idNumber}, {"$set":
-        {"status":"ready","pickle":pickle.dumps(newModel,protocol=pickle.HIGHEST_PROTOCOL) } # new value will be 42
-    })
-    datas.delete_one(query)
+ #   if model["type"]=="regression":
+ #       newModel=LinearAnomalyDetector(json)
+ #   else:
+ #       newModel=CircleAnomalyDetector(json)
+ #   models.update_one(
+ #   {"_id": idNumber}, {"$set":
+ #       {"status":"ready","pickle":pickle.dumps(newModel,protocol=pickle.HIGHEST_PROTOCOL) } # new value will be 42
+ #   })
+ #   datas.delete_one(query)'''
 def getAnomalies(modelId,dataId):
     models=mydb["models"]
     samples=mydb["anomaly_datas"]

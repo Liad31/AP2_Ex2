@@ -2,6 +2,7 @@
 
 window.onload = init;
 let currentModel = 0;
+var isTrainTableExist = false;
 var goalOfLoading = "";
 var CSVFile;
 
@@ -254,7 +255,7 @@ var CSVFile;
 
     async function dropHandler(ev) {
         var chosenCSVFile;
-        console.log('File(s) droppeaad');
+        console.log('File(s) dropped');
 
         // Prevent default behavior (Prevent file from being opened)
         ev.preventDefault();
@@ -293,9 +294,18 @@ var CSVFile;
     {
       const jsonObject = JSON.parse(jsonString);
       const tableObject = document.getElementById("train-table");
-      const tableHeaders = document.getElementById("table-headers");
+      //const tableHeaders = document.getElementById("table-headers");
       let numberOfRows = jsonObject[Object.keys(jsonObject)[0]].length;
       let arrayOfRows = [];
+        
+      if(isTrainTableExist)
+      {
+        deleteTrainTable();
+      }
+
+      let tableHeaders = document.createElement("tr");
+      tableObject.appendChild(tableHeaders);
+
       //create rows(<tr> elements)
       for(let rowNUm = 0; rowNUm < numberOfRows; ++rowNUm)
       {
@@ -317,6 +327,8 @@ var CSVFile;
               arrayOfRows[i].appendChild(newRowValue);
           }
       }
+
+      isTrainTableExist = true;
     }
 
     function isJsonOfCSVFileValid(jsonString)
@@ -325,7 +337,7 @@ var CSVFile;
         const numberOfProperties = Object.keys(jsonObject).length;
         if(numberOfProperties == 0)
         {
-            return true;
+            return false;
         }
 
         let numberOfRows = jsonObject[Object.keys(jsonObject)[0]].length;
@@ -340,6 +352,14 @@ var CSVFile;
         }
         console.log("valid");
         return true;
+    }
+
+    function deleteTrainTable()
+    {
+        const childrens = document.getElementById("train-table");
+        while (childrens.firstChild) {
+            childrens.removeChild(myNode.lastChild);
+        }
     }
 
     function submit() {
