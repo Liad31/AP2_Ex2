@@ -8,6 +8,7 @@ from werkzeug.utils import redirect
 import multiprocessing as mp
 from flask import render_template
 import pickle
+
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 myclient = pymongo.MongoClient("mongodb+srv://Mist:1234@cluster0.uuxni.mongodb.net/AP2_EX2?retryWrites=true&w=majority")
@@ -99,6 +100,7 @@ def train():
          ).get('id')),
         "data_id": x.inserted_id
     }
+    models.insert_one(new_model)
     response_model = {
         'model_id': str(x.inserted_id),
         'upload_time': output_date,
@@ -188,4 +190,4 @@ def get_anomalies():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=9867)
+    app.run(host="127.0.0.1", port=9868)
