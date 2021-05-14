@@ -7,9 +7,7 @@ from flask import request
 from werkzeug.utils import redirect
 import multiprocessing as mp
 from flask import render_template
-from AnomalyDetector import CircleAnomalyDetector,LinearAnomalyDetector
 import pickle
-from bson.objectid import ObjectId
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 myclient = pymongo.MongoClient("mongodb+srv://Mist:1234@cluster0.uuxni.mongodb.net/AP2_EX2?retryWrites=true&w=majority")
@@ -101,8 +99,6 @@ def train():
          ).get('id')),
         "data_id": x.inserted_id
     }
-
-    x = models.insert_one(new_model)
     response_model = {
         'model_id': str(x.inserted_id),
         'upload_time': output_date,

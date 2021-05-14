@@ -35,8 +35,21 @@
   margin-bottom: 2%;
 }
 
-table, td, tr, th{
-  border: 1px solid black;
+.table-row{
+  height: 40%;
+  width: 60%;
+  margin-top: 500px;
+  position: absolute;
+  border: solid chocolate;
+}
+
+th{
+  color:#0080ff;
+  font-size: 25px;
+} 
+
+td{
+  font-weight: bold;
 }
 
 #myInput {
@@ -84,10 +97,7 @@ table, td, tr, th{
   text-align: center;
 }
 
-#train-table{
-  margin-top: 29%;
-  margin-left: 2%;
-}
+
 
 /* Animations to fade the snackbar in and out */
 @-webkit-keyframes fadein {
