@@ -39,7 +39,8 @@
   height: 40%;
   width: 60%;
   margin-top: 500px;
-  position: fixed;
+  position: absolute;
+  border: solid chocolate;
 }
 
 #myInput {
