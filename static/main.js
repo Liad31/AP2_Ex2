@@ -189,7 +189,7 @@ var CSVFile;
             }
         }
         var json = {};
-        for (var i = 0; i < headers.length - 1; i++) {
+        for (var i = 0; i < headers.length; i++) {
                column= new Array(table[i].length);
                for (var j = 0; j < table[i].length - 1; j++) {
                     column[j] = table[i][j];
