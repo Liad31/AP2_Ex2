@@ -254,6 +254,7 @@ var CSVFile;
     }
 
     async function dropHandler(ev) {
+        //getArrayOfTableColumnObjectsAccordingProperty("B");
         var chosenCSVFile;
         console.log('File(s) dropped');
 
@@ -294,7 +295,6 @@ var CSVFile;
     {
       const jsonObject = JSON.parse(jsonString);
       const tableObject = document.getElementById("train-table");
-      //const tableHeaders = document.getElementById("table-headers");
       let numberOfRows = jsonObject[Object.keys(jsonObject)[0]].length;
       let arrayOfRows = [];
         
@@ -356,10 +356,58 @@ var CSVFile;
 
     function deleteTrainTable()
     {
-        const childrens = document.getElementById("train-table");
-        while (childrens.firstChild) {
-            childrens.removeChild(myNode.lastChild);
+        const tableObject = document.getElementById("train-table");
+        while (tableObject.firstChild) {
+            tableObject.removeChild(tableObject.lastChild);
         }
+    }
+
+    function getTableColumnIndexAccordingProperty(propertyName)
+    {
+        const tableObject = document.getElementById("train-table");
+        const properties = tableObject.firstChild.children;
+        for(let i = 0; i < properties.length; ++i)
+        {
+            if(properties[i].textContent == propertyName)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    function getArrayOfTableColumnObjectsAccordingProperty(propertyName)
+    {
+        const tableChildren = document.getElementById("train-table").children;
+        let arrayOfColumnObjects = [];
+        const columnIndex = getTableColumnIndexAccordingProperty(propertyName);
+        if(columnIndex == -1)
+        {
+            return -1;
+        }
+        for(let i = 1; i < tableChildren.length; ++i)
+        {
+            arrayOfColumnObjects.push(tableChildren[i].children[columnIndex]);
+        }
+        return arrayOfColumnObjects
+    }
+
+    function updateTableAccordingAnomalies(jsonString)
+    {
+        const tableChildren = document.getElementById("train-table").children;
+        const jsonObject = JSON.parse(jsonString);
+
+        for(const property in jsonObject) {
+            let propertyColumnObjects = getArrayOfTableColumnObjectsAccordingProperty(property);
+            if(propertyColumnObjects != -1)
+            {
+                for(let i = 0; i < jsonObject[property].length; ++i)
+                {
+                    propertyColumnObjects[jsonObject[property][i]].style.backgroundColor = "#ff3333";
+                }
+            }
+        }
+
     }
 
     function submit() {
