@@ -5,6 +5,7 @@ let currentModel = 0;
 var isTrainTableExist = false;
 var goalOfLoading = "";
 var CSVFile;
+var waitinglist = [];
 
     function  init() {
       $.ajax({
@@ -24,6 +25,21 @@ var CSVFile;
             contentType: 'application/json;charset=UTF-8',
             success: function (data) {
               render(data);
+              if (waitinglist.length > 0){
+                  for (var i = 0; i < data.length;++i) {
+                      if (data[i]["status"] == "ready"){
+                        id = data[i]["model_id"];
+                        const index = waitinglist.indexOf(id);
+                        if (index > -1) {
+                          waitinglist.splice(index, 1);
+                          var snackBar = document.getElementById("snackbar2");
+                          snackBar.innerText = "model " + id.toString() + " is ready:)";
+                          snackBar.className = "show";
+                          setTimeout(function(){ snackBar.className = snackBar.className.replace("show", ""); }, 7000);
+                         }
+                      }
+                  }
+                }
               }
             });
         }, 3000);//refresh the models every 3 second
@@ -225,6 +241,9 @@ var CSVFile;
               contentType: 'application/json;charset=UTF-8',
               accept: 'application/json;charset=UTF-8',
               data: JSON.stringify({"train_data":  json }),
+              success: function (data) {
+                 waitinglist.push(data["model_id"]);
+              }
             });
         }
         else if (goalOfLoading == "train regression") {
@@ -235,6 +254,9 @@ var CSVFile;
               contentType: 'application/json;charset=UTF-8',
               accept: 'application/json;charset=UTF-8',
               data: JSON.stringify({"train_data":  json }),
+              success: function (data) {
+                 waitinglist.push(data["model_id"]);
+              }
             });
         }
         else if (goalOfLoading=="detect") {
@@ -248,7 +270,7 @@ var CSVFile;
               dataType: "json",
               contentType: 'application/json;charset=UTF-8',
               accept: 'application/json;charset=UTF-8',
-              data: JSON.stringify({"predict_data":  json }),
+              data: JSON.stringify({"predict_data":  json })
             });
         }
     }

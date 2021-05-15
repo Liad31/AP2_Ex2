@@ -100,7 +100,7 @@ def train():
          ).get('id')),
         "data_id": x.inserted_id
     }
-    models.insert_one(new_model)
+    x = models.insert_one(new_model)
     response_model = {
         'model_id': str(x.inserted_id),
         'upload_time': output_date,
@@ -190,4 +190,4 @@ def get_anomalies():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=9868)
+    app.run(host="127.0.0.1", port=9869)
