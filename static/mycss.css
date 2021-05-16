@@ -52,6 +52,16 @@ td{
   font-weight: bold;
 }
 
+#headers-list{
+  width: 20%;
+  position: relative;
+  border: 1px solid chocolate;
+}
+
+button{
+  font-weight: bold;
+}
+
 #myInput {
   background-image: url('/static/images/searchicon.png'); /* Add a search icon to input */
   background-position: 10px 12px; /* Position the search icon */

@@ -3,8 +3,10 @@
 window.onload = init;
 let currentModel = 0;
 var isTrainTableExist = false;
+var isPropertyListExist = false;
 var goalOfLoading = "";
 var isAnomaliesExist = false;
+var activeListElement = undefined;
 var anomaliesCellsObjects = [];
 var CSVFile;
 
@@ -218,6 +220,7 @@ var CSVFile;
         json = await CSVToJson(chosenCSVFile);
         if (isJsonOfCSVFileValid(JSON.stringify(json))){
             setTrainTable(JSON.stringify(json));
+            setListOfProperties(JSON.stringify(json));
         }
         if (goalOfLoading == "train hybrid") {
             $.ajax({
@@ -256,9 +259,6 @@ var CSVFile;
     }
 
     async function dropHandler(ev) {
-        setTrainTable(json);
-        updateTableAccordingAnomalies(anomalies1);
-        updateTableAccordingAnomalies(anomalies2);
         //getArrayOfTableColumnObjectsAccordingProperty("B");
         var chosenCSVFile;
         console.log('File(s) dropped');
@@ -399,7 +399,6 @@ var CSVFile;
 
     function updateTableAccordingAnomalies(jsonString)
     {
-        const tableChildren = document.getElementById("train-table").children;
         const jsonObject = JSON.parse(jsonString);
 
         if(isAnomaliesExist)
@@ -430,6 +429,49 @@ var CSVFile;
         }
 
         isAnomaliesExist = false;
+    }
+
+    function setListOfProperties(jsonString)
+    {
+        const jsonObject = JSON.parse(jsonString);
+        const listObject = document.getElementById("headers-list");
+        
+        if(isPropertyListExist)
+        {
+            clearListOfProperties();
+        }
+
+        for(property in jsonObject)
+        {
+            let newButton = document.createElement("button");
+            newButton.type = "button";
+            newButton.className = "list-group-item list-group-item-action";
+            newButton.textContent = property;
+            newButton.onclick = function() {propertyListClick(this);};
+            listObject.appendChild(newButton);
+        }
+
+        isPropertyListExist = true;
+    }
+
+    function clearListOfProperties()
+    {
+        const listObject = document.getElementById("headers-list");
+        while (listObject.firstChild) {
+            listObject.removeChild(listObject.lastChild);
+        }
+
+        isPropertyListExist = false;
+    }
+
+    function propertyListClick(element)
+    {
+        if(activeListElement != undefined)
+        {
+            activeListElement.className = "list-group-item list-group-item-action";
+        }
+        element.className = "list-group-item list-group-item-action active";
+        activeListElement = element;
     }
 
     function submit() {
