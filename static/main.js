@@ -4,6 +4,8 @@ window.onload = init;
 let currentModel = 0;
 var isTrainTableExist = false;
 var goalOfLoading = "";
+var isAnomaliesExist = false;
+var anomaliesCellsObjects = [];
 var CSVFile;
 
     function  init() {
@@ -254,6 +256,9 @@ var CSVFile;
     }
 
     async function dropHandler(ev) {
+        setTrainTable(json);
+        updateTableAccordingAnomalies(anomalies1);
+        updateTableAccordingAnomalies(anomalies2);
         //getArrayOfTableColumnObjectsAccordingProperty("B");
         var chosenCSVFile;
         console.log('File(s) dropped');
@@ -397,17 +402,34 @@ var CSVFile;
         const tableChildren = document.getElementById("train-table").children;
         const jsonObject = JSON.parse(jsonString);
 
+        if(isAnomaliesExist)
+        {
+            clearAnomalies();
+        }
+
         for(const property in jsonObject) {
             let propertyColumnObjects = getArrayOfTableColumnObjectsAccordingProperty(property);
             if(propertyColumnObjects != -1)
             {
                 for(let i = 0; i < jsonObject[property].length; ++i)
                 {
+                    anomaliesCellsObjects.push(propertyColumnObjects[jsonObject[property][i]]);
                     propertyColumnObjects[jsonObject[property][i]].style.backgroundColor = "#ff3333";
                 }
             }
         }
 
+        isAnomaliesExist = true;
+    }
+
+    function clearAnomalies()
+    {
+        for(let i = 0; i < anomaliesCellsObjects.length; ++i)
+        {
+            anomaliesCellsObjects.pop().style.backgroundColor = "white";
+        }
+
+        isAnomaliesExist = false;
     }
 
     function submit() {
