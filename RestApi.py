@@ -8,6 +8,9 @@ from werkzeug.utils import redirect
 import multiprocessing as mp
 from flask import render_template
 import pickle
+import matplotlib.pyplot as plt
+import mpld3
+from graphCreator import plotGraph
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
@@ -187,6 +190,14 @@ def get_anomalies():
     dataId=x.inserted_id
     res=threadPool.map(getAnomaliesHelper,zip([id],[dataId]))
     return res
+
+@app.route("/api/anomaly", methods=["POST"])
+def getGraph():
+    numOfLines = request.json["numOfLInes"]
+    ys = request.json["ys"]
+    spans = request.json["spans"]
+    plotGraph(numOfLines, ys, spans)
+    return render_template('graph.html')
 
 
 if __name__ == "__main__":
