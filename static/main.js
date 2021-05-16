@@ -111,9 +111,9 @@ var CSVFile;
 
     function trainClick() {
         goalOfLoading = "train";
-        let trainButton = document.getElementById("train");
-        let findButton = document.getElementById("find");
-        let typesDiv = document.getElementById("types");
+        let trainButton = document.body.children[0].children[2].children[0];
+        let findButton = document.body.children[0].children[2].children[1];
+        let typesDiv = document.body.children[0].children[4]
 
         if (findButton.classList.contains("active")) {
             findButton.classList.remove("active");
@@ -129,9 +129,9 @@ var CSVFile;
 
     function findClick() {
         goalOfLoading = "detect";
-        let findButton = document.getElementById("find");
-        let trainButton = document.getElementById("train");
-        let typesDiv = document.getElementById("types");
+        let findButton = document.body.children[0].children[2].children[1];
+        let trainButton = document.body.children[0].children[2].children[0];
+        let typesDiv = document.body.children[0].children[4]
 
         if (trainButton.classList.contains("active")) {
             trainButton.classList.remove("active");
@@ -146,8 +146,8 @@ var CSVFile;
 
         function hybridClick() {
         goalOfLoading = "train hybrid";
-        let hybridButton = document.getElementById("hybrid");
-        let regressionButton = document.getElementById("regression");
+        let hybridButton = document.body.children[0].children[4].children[0];
+        let regressionButton = document.body.children[0].children[4].children[1];
 
         if (regressionButton.classList.contains("active")) {
             regressionButton.classList.remove("active");
@@ -161,8 +161,8 @@ var CSVFile;
 
     function regressionClick() {
         goalOfLoading = "train regression";
-        let regressionButton = document.getElementById("regression");
-        let hybridButton = document.getElementById("hybrid");
+        let regressionButton = document.body.children[0].children[4].children[1];
+        let hybridButton = document.body.children[0].children[4].children[0];
 
         if (hybridButton.classList.contains("active")) {
             hybridButton.classList.remove("active");
@@ -294,6 +294,17 @@ var CSVFile;
             // Use DataTransfer interface to remove the drag data
             ev.dataTransfer.clearData();
         }
+    }
+
+    function fileUploadClick() {
+        let fileInput = document.body.children[4];
+        fileInput.click();
+        CSVFile = fileInput.files[0];
+    }
+
+    function onUploadEventEnd() {
+        let fileInput = document.body.children[4];
+        CSVFile = fileInput.files[0];
     }
 
     function setTrainTable(jsonString)

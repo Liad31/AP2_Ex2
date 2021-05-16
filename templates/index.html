@@ -20,7 +20,8 @@
       <button type="button" class="btn btn-light" onclick="trainClick()" id="train">Train model</button>
       <button type="button" class="btn btn-light" onclick="findClick()" id="find">Find anomalies</button>
     </div>
-    <div id="drop_zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" onclick="func(event);">
+
+    <div id="drop_zone" ondrop="dropHandler(event)" ondragover="dragOverHandler(event)" onclick="fileUploadClick()">
         <img src="../static/images/drop.jpg" id="upload">
     </div>
     <div class="buttonHolder hidden" id="types">
@@ -40,8 +41,9 @@
     </div>
   </div>
 
-  <div class="container-fluid"></div>
+  <div class="container-fluid">
     <ul class="list-group" id="headers-list"></ul>
   </div>
+<input type="file" style="display: none" onchange="onUploadEventEnd()"/>
 </body>
 </html>
