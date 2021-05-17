@@ -430,6 +430,22 @@ var waitinglist = [];
         return arrayOfColumnObjects
     }
 
+    function getArrayOfTableColumnValuesAccordingProperty(propertyName)
+    {
+        let arrayOfColumnValues = []
+        const arrayOfColumnObjects = getArrayOfTableColumnObjectsAccordingProperty(propertyName);
+        if(arrayOfColumnObjects == -1)
+        {
+            return -1;
+        }
+
+        for(let i = 0; i < arrayOfColumnObjects.length; ++i)
+        {
+            arrayOfColumnValues.push(parseFloat(arrayOfColumnObjects[i].textContent))
+        }
+        return arrayOfColumnValues;
+    }
+
     function updateTableAccordingAnomalies(jsonString)
     {
         const jsonObject = JSON.parse(jsonString);
@@ -505,18 +521,25 @@ var waitinglist = [];
         }
         element.className = "list-group-item list-group-item-action active";
         activeListElement = element;
-
+        console.log("loaded!");
+        console.log("error?");
         $.ajax({
-            type : 'GET',
+            type : 'POST',
             url : '/api/graph',
-            dataType: "json",
+            dataType: "html",
             contentType: 'application/json;charset=UTF-8',
             accept: 'text/html;charset=UTF-8',
-            data: JSON.stringify({"ys":  getArrayOfTableColumnObjectsAccordingProperty(element.textContent), "spans": anomaliesCellsObjects}),
-            success: function (data) {
-               console.log(data)
+            data: JSON.stringify({"ys":  getArrayOfTableColumnValuesAccordingProperty(element.textContent), "spans": anomaliesCellsObjects}),
+            success: function () {
+                alert("seccess");
+                $("#graph").load("templates/graph.html"); 
+                console.log("loaded!");
+            },
+            error: function(){
+                alert("error");
             }
         });
+        console.log("error?");
     }
 
     function submit() {

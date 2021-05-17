@@ -191,7 +191,7 @@ def get_anomalies():
     res=threadPool.map(getAnomaliesHelper,zip([id],[dataId]))
     return res
 
-@app.route("/api/graph", methods=["GET"])
+@app.route("/api/graph", methods=["POST"])
 def getGraph():
     ys = request.json["ys"]
     spans = request.json["spans"]
@@ -200,4 +200,4 @@ def getGraph():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=9869)
+    app.run(host="127.0.0.1", port=9879)
