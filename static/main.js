@@ -505,6 +505,18 @@ var waitinglist = [];
         }
         element.className = "list-group-item list-group-item-action active";
         activeListElement = element;
+
+        $.ajax({
+            type : 'GET',
+            url : '/api/graph',
+            dataType: "json",
+            contentType: 'application/json;charset=UTF-8',
+            accept: 'text/html;charset=UTF-8',
+            data: JSON.stringify({"ys":  getArrayOfTableColumnObjectsAccordingProperty(element.textContent), "spans": anomaliesCellsObjects}),
+            success: function (data) {
+               console.log(data)
+            }
+        });
     }
 
     function submit() {

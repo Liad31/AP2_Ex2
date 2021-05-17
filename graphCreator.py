@@ -8,12 +8,10 @@ import mpld3
 #     ys.append(random.randint(ys[i-1]-10,ys[i-1]+10))
 # spans = [[10, 230], [231,231]]
 
-def plotGraph(numberOfLines, ys, spans):
-    if (len(ys) != numberOfLines):
-        return
+def plotGraph(ys, spans):
     xs = []
     current = 0
-    for i in range(numberOfLines):
+    for i in range(len(ys)):
         xs.append(i)
     for span in spans:
         start = span[0]

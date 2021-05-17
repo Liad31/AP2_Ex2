@@ -193,10 +193,9 @@ def get_anomalies():
 
 @app.route("/api/graph", methods=["GET"])
 def getGraph():
-    numOfLines = request.json["numOfLInes"]
     ys = request.json["ys"]
     spans = request.json["spans"]
-    plotGraph(numOfLines, ys, spans)
+    plotGraph(ys, spans)
     return render_template('graph.html')
 
 
