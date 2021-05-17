@@ -7,8 +7,11 @@ from flask import request
 from werkzeug.utils import redirect
 import multiprocessing as mp
 from flask import render_template
-#from AnomalyDetector import CircleAnomalyDetector,LinearAnomalyDetector
 import pickle
+import matplotlib.pyplot as plt
+import mpld3
+from graphCreator import plotGraph
+
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 myclient = pymongo.MongoClient("mongodb+srv://Mist:1234@cluster0.uuxni.mongodb.net/AP2_EX2?retryWrites=true&w=majority")
@@ -17,27 +20,28 @@ mydb = myclient["AP2_EX2"]
 def trainModel(idNumber):
     datas = mydb["datas"]
     models=mydb["models"]
-    query = {"_id": int(idNumber)}
+    query = {"_id": (idNumber)}
     model=models.find(query).limit(1)[0]
-    json=datas.find(query).next()["train_data"]
- #   if model["type"]=="regression":
- #       newModel=LinearAnomalyDetector(json)
- #   else:
- #       newModel=CircleAnomalyDetector(json)
- #   models.update_one(
- #   {"_id": idNumber}, {"$set":
- #       {"status":"ready","pickle":pickle.dumps(newModel,protocol=pickle.HIGHEST_PROTOCOL) } # new value will be 42
- #   })
- #   datas.delete_one(query)'''
+    data_query = {"_id": model["data_id"]}
+    json=datas.find(data_query).next()["train_data"]
+    if model["type"]=="regression":
+        newModel=LinearAnomalyDetector(json)
+    elif model["type"]=="hybrid":
+        newModel=CircleAnomalyDetector(json)
+    models.update_one(
+    {"_id": idNumber}, {"$set":
+        {"status":"ready","pickle":pickle.dumps(newModel,protocol=pickle.HIGHEST_PROTOCOL) } # new value will be 42
+    })
+    datas.delete_one(data_query)
 def getAnomalies(modelId,dataId):
     models=mydb["models"]
     samples=mydb["anomaly_datas"]
-    modelQuery={"_id": int(modelId)}
+    modelQuery={"_id": modelId}
     dataQuery={"_id": dataId}
-    modelJson=models.find(modelQuery).next()
-    model=pickle.loads(modelJson["pickle"])
-    json=samples.find(dataQuery).next()["predict_data"]
     try:
+        modelJson = models.find(modelQuery).next()
+        model = pickle.loads(modelJson["pickle"])
+        json = samples.find(dataQuery).next()["predict_data"]
         res=model.getAnomalySpan(json)
         return jsonify({"anomalies":res,"reason":{"correlated_features":str(model.getCorrelatedFeatures()),"algorithm":modelJson["type"]}})
     except:
@@ -73,15 +77,8 @@ def train():
     modelType = request.args.get('model_type')
     if modelType != 'hybrid' and modelType != 'regression':
         abort(400)
-    collist = mydb.list_collection_names()
-    if "models" not in collist:
-        isFirstTime = True
-    else:
-        models = mydb["models"]
-        if models.count_documents({}) == 0:
-            isFirstTime = True
-        else:
-            isFirstTime = False
+    seqs = mydb["seqs"]
+    models = mydb["models"]
     datas = mydb["datas"]
 
     now = datetime.now()
@@ -89,28 +86,30 @@ def train():
     SECONDS_IN_HOUR = 3600
 
     output_date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+" + str(utc.seconds/SECONDS_IN_HOUR))
-    if isFirstTime:
-        request.json["_id"] = 1
-    else:
-        max = models.find().sort("_id", -1).limit(1)
-        request.json["_id"] = max[0]["_id"] + 1
+    request.json['_id'] = str(seqs.find_and_modify(
+        query={ 'collection' : 'datas' },
+        update={'$inc': {'id': 1}},
+        fields={'id': 1, '_id': 0},
+        new=True
+    ).get('id'))
     x = datas.insert_one(request.json)
 
-    new_model = {
-        "_id": x.inserted_id,
-        "upload_time": output_date,
-        "status": "pending",
-        "type": modelType,
-        "pickle": ""
+    new_model = {"upload_time": output_date, "status": "pending", "type": modelType, "pickle": "",
+         "_id": str(seqs.find_and_modify(
+             query={'collection': 'models'},
+             update={'$inc': {'id': 1}},
+             fields={'id': 1, '_id': 0},
+             new=True
+         ).get('id')),
+        "data_id": x.inserted_id
     }
+    x = models.insert_one(new_model)
     response_model = {
         'model_id': str(x.inserted_id),
         'upload_time': output_date,
         'status': 'pending'
     }
-
-    x = models.insert_one(new_model)
-    threadPool.map_async(trainModel,(request.json["_id"],))
+    threadPool.map_async(trainModel,(x.inserted_id,))
     return jsonify(response_model), 200
 
 
@@ -120,7 +119,7 @@ def get_model():
     if id == None:
         abort(400)
     models = mydb["models"]
-    query = {"_id": int(id)}
+    query = {"_id": id}
 
     wanted_model = models.find(query)
     if (models.count_documents(query) != 1):
@@ -141,12 +140,15 @@ def delete_model():
         abort(400)
     models = mydb["models"]
     datas = mydb["datas"]
-    query = {"_id": int(id)}
+    query = {"_id": id}
+    wanted_model = models.find(query)[0]
+    data_id = wanted_model["data_id"]
+    query_data = {"_id": data_id}
 
     wanted_model = models.delete_one(query)
     if (wanted_model.deleted_count != 1):
         abort(404)
-    datas.delete_one(query)
+    datas.delete_one(query_data)
 
     return ('', 204)
 
@@ -154,7 +156,7 @@ def delete_model():
 @app.route("/api/models", methods=["GET"])
 def get_models():
     models = mydb["models"]
-    all_models = models.find()
+    all_models = models.find().sort("_id", -1)
     models_array = []
     for model in all_models:
         json_model = get_json_model_from_database(model)
@@ -168,7 +170,7 @@ def get_anomalies():
     if id == None:
         abort(400)
     models = mydb["models"]
-    query = {"_id": int(id)}
+    query = {"_id": id}
 
     wanted_model = models.find(query)
     if (models.count_documents(query) != 1):
@@ -177,11 +179,26 @@ def get_anomalies():
         return redirect("/api/model?model_id=" + str(id), 405)#TODO: decide if it does get and not post as writen in the document
 
     anomaly_datas = mydb["anomaly_datas"]
+    seqs = mydb["seqs"]
+    request.json['_id'] = str(seqs.find_and_modify(
+        query={ 'collection' : 'anomaly_datas' },
+        update={'$inc': {'id': 1}},
+        fields={'id': 1, '_id': 0},
+        new=True
+    ).get('id'))
     x = anomaly_datas.insert_one(request.json)
     dataId=x.inserted_id
     res=threadPool.map(getAnomaliesHelper,zip([id],[dataId]))
     return res
 
+@app.route("/api/graph", methods=["GET"])
+def getGraph():
+    numOfLines = request.json["numOfLInes"]
+    ys = request.json["ys"]
+    spans = request.json["spans"]
+    plotGraph(numOfLines, ys, spans)
+    return render_template('graph.html')
+
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=9876)
+    app.run(host="127.0.0.1", port=9869)
