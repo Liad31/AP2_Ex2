@@ -125,6 +125,25 @@ var waitinglist = [];
       }
     }
 
+    function search2() {
+      // Declare variables
+      let input, filter, ul, li, a, i, txtValue;
+      input = document.getElementById('myInput2');
+      filter = input.value;
+      ul = document.getElementById("headers-list");
+      let buttons = ul.getElementsByTagName('button');
+
+      // Loop through all list items, and hide those who don't match the search query
+      for (i = 0; i < buttons.length; i++) {
+        txtValue = buttons[i].innerHTML;
+        if (txtValue.indexOf(filter) > -1) {
+          buttons[i].style.display = "";
+        } else {
+          buttons[i].style.display = "none";
+        }
+      }
+    }
+
     function trainClick() {
         goalOfLoading = "train";
         let trainButton = document.body.children[0].children[2].children[0];
@@ -229,7 +248,7 @@ var waitinglist = [];
     }
 
     async function handleFile(chosenCSVFile){
-        if (chosenCSVFile.type != "text/csv") {
+        if (chosenCSVFile.type != "text/csv" && chosenCSVFile.type != "application/vnd.ms-excel") {
             alert("wrong file! not a csv file");
             return;
         }
@@ -319,13 +338,12 @@ var waitinglist = [];
     }
 
     function fileUploadClick() {
-        let fileInput = document.body.children[4];
+        let fileInput = document.getElementById("fileInput");
         fileInput.click();
-        CSVFile = fileInput.files[0];
     }
 
     function onUploadEventEnd() {
-        let fileInput = document.body.children[4];
+        let fileInput = document.getElementById("fileInput");
         CSVFile = fileInput.files[0];
     }
 

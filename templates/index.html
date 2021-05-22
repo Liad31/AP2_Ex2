@@ -20,12 +20,7 @@
       position: relative;
     }
 
-    #headers-list{
-      width: 20%;
-      position: absolute;
-      border: 1px solid chocolate;
-      top: 0px;
-    }
+
   </style>
 </head>
 <body>
@@ -65,10 +60,10 @@
 
     </div>
   </div>
-
-  <div class="container-fluid">
+<div id="choose2">
+  <input type="text" id="myInput2" onkeyup="search2(this)" placeholder="Search for names..">
     <ul class="list-group" id="headers-list"></ul>
-  </div>
-<input type="file" style="display: none" onchange="onUploadEventEnd()"/>
+</div>
+<input type="file" id="fileInput" style="display: none" onchange="onUploadEventEnd()"/>
 </body>
 </html>
