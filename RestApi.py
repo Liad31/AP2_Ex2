@@ -7,6 +7,7 @@ from flask import request
 from werkzeug.utils import redirect
 import multiprocessing as mp
 from flask import render_template
+from AnomalyDetector import LinearAnomalyDetector,CircleAnomalyDetector
 import pickle
 
 app = flask.Flask(__name__)
