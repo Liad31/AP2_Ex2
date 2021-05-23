@@ -29,6 +29,7 @@ var waitinglist = [];
             contentType: 'application/json;charset=UTF-8',
             success: function (data) {
               render(data);
+              search(); // so we will show only what in search bar
               if (waitinglist.length > 0){
                   for (var i = 0; i < data.length;++i) {
                       if (data[i]["status"] == "ready"){
@@ -40,6 +41,7 @@ var waitinglist = [];
                           snackBar.innerText = "model " + id.toString() + " is ready:)";
                           snackBar.className = "show";
                           setTimeout(function(){ snackBar.className = snackBar.className.replace("show", ""); }, 7000);
+
                          }
                       }
                   }
