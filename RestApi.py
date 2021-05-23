@@ -194,12 +194,15 @@ def get_anomalies():
     return res
 
 @app.route("/api/graph", methods=["POST"])
-def getGraph():
+def postGraph():
     ys = request.json["ys"]
     spans = request.json["spans"]
     plotGraph(ys, spans)
+    return '', 200
+
+@app.route("/api/get_graph", methods=["GET"])
+def getGraph():
     return render_template('graph.html')
 
-
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=9879)
+    app.run(host="127.0.0.1", port=9880)

@@ -9,6 +9,7 @@ import mpld3
 # spans = [[10, 230], [231,231]]
 
 def plotGraph(ys, spans):
+    fig = plt.figure(figsize=(7, 3.5))
     xs = []
     current = 0
     for i in range(len(ys)):
@@ -23,8 +24,7 @@ def plotGraph(ys, spans):
     plt.plot(xs[current : ], ys[current : ], color='b', linewidth=3)
 
     plt.grid(True, alpha=0.3)
-    plt.show()
-    html_str = mpld3.fig_to_html(plt.gcf())
+    html_str = mpld3.fig_to_html(fig)
     Html_file = open("templates/graph.html", "w")
     Html_file.write(html_str)
     Html_file.close()

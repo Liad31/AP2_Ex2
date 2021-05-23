@@ -10,18 +10,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script src="{{ url_for('static', filename='main.js') }}"></script>
-
-  <style>
-    #graph{
-      border: 1px solid chocolate;
-      width: 40%;
-      height: 400px;
-      margin-left: 25%;
-      position: relative;
-    }
-
-
-  </style>
 </head>
 <body>
 
@@ -56,9 +44,7 @@
   </div>
 
   <div class="container-fluid">
-    <div id="graph">
-
-    </div>
+    <iframe id="graph"></iframe>
   </div>
 <div id="choose2">
   <input type="text" id="myInput2" onkeyup="search2(this)" placeholder="Search for names..">

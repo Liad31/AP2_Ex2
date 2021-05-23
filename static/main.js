@@ -541,25 +541,39 @@ var waitinglist = [];
         }
         element.className = "list-group-item list-group-item-action active";
         activeListElement = element;
-        console.log("loaded!");
-        console.log("error?");
+        
+        let graphObject = document.getElementById("graph");
+
         $.ajax({
             type : 'POST',
             url : '/api/graph',
-            dataType: "html",
+            dataType: "text",
             contentType: 'application/json;charset=UTF-8',
-            accept: 'text/html;charset=UTF-8',
+            accept: 'text/plain;charset=UTF-8',
             data: JSON.stringify({"ys":  getArrayOfTableColumnValuesAccordingProperty(element.textContent), "spans": anomaliesCellsObjects}),
             success: function () {
-                alert("seccess");
-                $("#graph").load("templates/graph.html"); 
-                console.log("loaded!");
+                graphObject.src = window.location.href + "api/get_graph";
             },
-            error: function(){
-                alert("error");
-            }
+            error: function (jqXHR, exception) {
+                var msg = '';
+                if (jqXHR.status === 0) {
+                    msg = 'Not connect.\n Verify Network.';
+                } else if (jqXHR.status == 404) {
+                    msg = 'Requested page not found. [404]';
+                } else if (jqXHR.status == 500) {
+                    msg = 'Internal Server Error [500].';
+                } else if (exception === 'parsererror') {
+                    msg = 'Requested JSON parse failed.';
+                } else if (exception === 'timeout') {
+                    msg = 'Time out error.';
+                } else if (exception === 'abort') {
+                    msg = 'Ajax request aborted.';
+                } else {
+                    msg = 'Uncaught Error.\n' + jqXHR.responseText;
+                }
+                $('#post').html(msg);
+            },
         });
-        console.log("error?");
     }
 
     function submit() {
