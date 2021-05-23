@@ -1,12 +1,14 @@
 import flask
 from flask import  abort, jsonify
 import pymongo
+from pymongo.collation import Collation
 import datetime
 from datetime import datetime, timezone
 from flask import request
 from werkzeug.utils import redirect
 import multiprocessing as mp
 from flask import render_template
+from AnomalyDetector import LinearAnomalyDetector,CircleAnomalyDetector
 import pickle
 import matplotlib.pyplot as plt
 import mpld3
@@ -156,7 +158,7 @@ def delete_model():
 @app.route("/api/models", methods=["GET"])
 def get_models():
     models = mydb["models"]
-    all_models = models.find().sort("_id", -1)
+    all_models = models.find().sort("_id", -1).collation(Collation(locale='en_US', numericOrdering=True))
     models_array = []
     for model in all_models:
         json_model = get_json_model_from_database(model)
