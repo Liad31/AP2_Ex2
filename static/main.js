@@ -8,6 +8,7 @@ var goalOfLoading = "";
 var isAnomaliesExist = false;
 var activeListElement = undefined;
 var anomaliesCellsObjects = [];
+var anomaliesJson = {};
 var CSVFile;
 var waitinglist = [];
 
@@ -298,10 +299,11 @@ var waitinglist = [];
               accept: 'application/json;charset=UTF-8',
               data: JSON.stringify({"predict_data":  json }),
               success: function (json) {
-                let spans = json[0]["anomalies"];
+                let spans = changeToAppopriateAnomaliesFormat(json[0]["anomalies"]);
+                anomaliesJson = spans;
                 console.log(spans);
                 console.log(JSON.stringify(spans));
-                //updateTableAccordingAnomalies(JSON.stringify(spans));
+                updateTableAccordingAnomalies(JSON.stringify(spans));
              },
              error: function (jqXHR, exception) {
                 var msg = '';
@@ -560,6 +562,7 @@ var waitinglist = [];
 
     function propertyListClick(element)
     {
+        let anomalyValues;
         if(activeListElement != undefined)
         {
             activeListElement.className = "list-group-item list-group-item-action";
@@ -569,13 +572,22 @@ var waitinglist = [];
         
         let graphObject = document.getElementById("graph");
 
+        if(element.textContent in anomaliesJson)
+        {
+            anomalyValues = anomaliesJson[element.textContent];
+        }
+        else
+        {
+            anomalyValues = [];
+        }
+        console.log("spans = " + anomalyValues);
         $.ajax({
             type : 'POST',
             url : '/api/graph',
             dataType: "text",
             contentType: 'application/json;charset=UTF-8',
             accept: 'text/plain;charset=UTF-8',
-            data: JSON.stringify({"ys":  getArrayOfTableColumnValuesAccordingProperty(element.textContent), "spans": anomaliesCellsObjects}),
+            data: JSON.stringify({"ys":  getArrayOfTableColumnValuesAccordingProperty(element.textContent), "spans": anomalyValues}),
             success: function () {
                 graphObject.src = window.location.href + "api/get_graph";
             },
@@ -599,6 +611,16 @@ var waitinglist = [];
                 alert(msg);
             },
         });
+    }
+
+    function changeToAppopriateAnomaliesFormat(anomaliesObject)
+    {
+        let newAnomaliesObject = {};
+        for(property in anomaliesObject)
+        {
+            newAnomaliesObject[property] = JSON.parse(anomaliesObject[property][0]);
+        }
+        return newAnomaliesObject;
     }
 
     function submit() {
