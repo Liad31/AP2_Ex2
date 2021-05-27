@@ -298,8 +298,10 @@ var waitinglist = [];
               accept: 'application/json;charset=UTF-8',
               data: JSON.stringify({"predict_data":  json }),
               success: function (json) {
-                alert("success!")
-                updateTableAccordingAnomalies(json);
+                let spans = json[0]["anomalies"];
+                console.log(spans);
+                console.log(JSON.stringify(spans));
+                //updateTableAccordingAnomalies(JSON.stringify(spans));
              },
              error: function (jqXHR, exception) {
                 var msg = '';

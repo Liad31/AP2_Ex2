@@ -20,6 +20,9 @@ myclient = pymongo.MongoClient("mongodb+srv://Mist:1234@cluster0.uuxni.mongodb.n
 mydb = myclient["AP2_EX2"]
 
 def trainModel(idNumber):
+    myclient = pymongo.MongoClient(
+        "mongodb+srv://Mist:1234@cluster0.uuxni.mongodb.net/AP2_EX2?retryWrites=true&w=majority")
+    mydb = myclient["AP2_EX2"]
     datas = mydb["datas"]
     models=mydb["models"]
     query = {"_id": (idNumber)}
@@ -36,6 +39,9 @@ def trainModel(idNumber):
     })
     datas.delete_one(data_query)
 def getAnomalies(modelId,dataId):
+    myclient = pymongo.MongoClient(
+        "mongodb+srv://Mist:1234@cluster0.uuxni.mongodb.net/AP2_EX2?retryWrites=true&w=majority")
+    mydb = myclient["AP2_EX2"]
     models=mydb["models"]
     samples=mydb["anomaly_datas"]
     modelQuery={"_id": modelId}
@@ -45,17 +51,11 @@ def getAnomalies(modelId,dataId):
         model = pickle.loads(modelJson["pickle"])
         json = samples.find(dataQuery).next()["predict_data"]
         res=model.getAnomalySpan(json)
-        return jsonify({"anomalies":res,"reason":{"correlated_features":str(model.getCorrelatedFeatures()),"algorithm":modelJson["type"]}})
+        return {"anomalies":res,"reason":{"correlated_features":str(model.getCorrelatedFeatures()),"algorithm":modelJson["type"]}}
     except:
         return "detection error"
     finally:
         samples.delete_one(dataQuery)
-
-# since map can only send one argument for a function we need to unpack both arguments
-# this is why this helper function is here
-def getAnomaliesHelper(args):
-    return getAnomalies(*args)
-
 
 if __name__=="__main__":
     models = mydb["models"]
@@ -190,8 +190,8 @@ def get_anomalies():
     ).get('id'))
     x = anomaly_datas.insert_one(request.json)
     dataId=x.inserted_id
-    res=threadPool.map(getAnomaliesHelper,zip([id],[dataId]))
-    return res
+    res=threadPool.starmap(getAnomalies,[(id,dataId)])
+    return jsonify(res)
 
 @app.route("/api/graph", methods=["POST"])
 def postGraph():
@@ -205,4 +205,5 @@ def getGraph():
     return render_template('graph.html')
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=9884)
+
+    app.run(host="127.0.0.1", port=9885)
