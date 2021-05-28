@@ -8,7 +8,7 @@ var goalOfLoading = "";
 var isAnomaliesExist = false;
 var activeListElement = undefined;
 var anomaliesCellsObjects = [];
-var anomaliesJson = {};
+var anomaliesGrapthArray = [];
 var CSVFile;
 var waitinglist = [];
 
@@ -299,10 +299,8 @@ var waitinglist = [];
               accept: 'application/json;charset=UTF-8',
               data: JSON.stringify({"predict_data":  json }),
               success: function (json) {
-                let spans = changeToAppopriateAnomaliesFormat(json[0]["anomalies"]);
-                anomaliesJson = spans;
-                console.log(spans);
-                console.log(JSON.stringify(spans));
+                let spans = changeToAppopriateAnomaliesFormatForTabel(json[0]["anomalies"]);
+                anomaliesGrapthArray = changeToAppopriateAnomaliesFormatForGraph(json[0]["anomalies"]);
                 updateTableAccordingAnomalies(JSON.stringify(spans));
              },
              error: function (jqXHR, exception) {
@@ -562,7 +560,7 @@ var waitinglist = [];
 
     function propertyListClick(element)
     {
-        let anomalyValues;
+        //let anomalyValues;
         if(activeListElement != undefined)
         {
             activeListElement.className = "list-group-item list-group-item-action";
@@ -572,22 +570,13 @@ var waitinglist = [];
         
         let graphObject = document.getElementById("graph");
 
-        if(element.textContent in anomaliesJson)
-        {
-            anomalyValues = anomaliesJson[element.textContent];
-        }
-        else
-        {
-            anomalyValues = [];
-        }
-        console.log("spans = " + anomalyValues);
         $.ajax({
             type : 'POST',
             url : '/api/graph',
             dataType: "text",
             contentType: 'application/json;charset=UTF-8',
             accept: 'text/plain;charset=UTF-8',
-            data: JSON.stringify({"ys":  getArrayOfTableColumnValuesAccordingProperty(element.textContent), "spans": anomalyValues}),
+            data: JSON.stringify({"ys":  getArrayOfTableColumnValuesAccordingProperty(element.textContent), "spans": anomaliesGrapthArray}),
             success: function () {
                 graphObject.src = window.location.href + "api/get_graph";
             },
@@ -613,14 +602,31 @@ var waitinglist = [];
         });
     }
 
-    function changeToAppopriateAnomaliesFormat(anomaliesObject)
+    function changeToAppopriateAnomaliesFormatForTabel(anomaliesObject)
     {
         let newAnomaliesObject = {};
+        let borderArray = [];
         for(property in anomaliesObject)
         {
-            newAnomaliesObject[property] = JSON.parse(anomaliesObject[property][0]);
+            let anomaliesArray = [];
+            borderArray = JSON.parse(anomaliesObject[property][0]);
+            for(let i = borderArray[0]; i <= borderArray[1]; ++i)
+            {
+                anomaliesArray.push(i);
+            }
+            newAnomaliesObject[property] = anomaliesArray;
         }
         return newAnomaliesObject;
+    }
+
+    function changeToAppopriateAnomaliesFormatForGraph(anomaliesObject)
+    {
+        let newAnomaliesArray = [];
+        for(property in anomaliesObject)
+        {
+            newAnomaliesArray.push(JSON.parse(anomaliesObject[property]));
+        }
+        return newAnomaliesArray;
     }
 
     function submit() {
