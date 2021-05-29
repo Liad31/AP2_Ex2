@@ -51,9 +51,10 @@ def getAnomalies(modelId,dataId):
         model = pickle.loads(modelJson["pickle"])
         json = samples.find(dataQuery).next()["predict_data"]
         res=model.getAnomalySpan(json)
-        correlated=[x.split(',') for x in model.getCorrelatedFeatures()]
+        correlated=[str(x).split(',') for x in model.getCorrelatedFeatures()]
         return {"anomalies":res,"reason":{"correlated_features":str(correlated),"algorithm":modelJson["type"]}}
-    except:
+    except Exception as e:
+        print(e)
         return "detection error"
     finally:
         samples.delete_one(dataQuery)
@@ -207,4 +208,4 @@ def getGraph():
 
 if __name__ == "__main__":
 
-    app.run(host="127.0.0.1", port=9885)
+    app.run(host="127.0.0.1", port=9886)
