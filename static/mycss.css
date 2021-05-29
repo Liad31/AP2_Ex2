@@ -11,11 +11,14 @@
 }
 
 #graph{
-  border: 1px solid chocolate;
   width: 40%;
   height: 400px;
   margin-left: 25%;
   position: relative;
+}
+
+body {
+  background-color: lightblue;
 }
 
 #upload{
@@ -55,7 +58,7 @@
 
 .table-row{
   height: 40%;
-  width: 60%;
+  width: 65%;
   margin-top: 500px;
   position: absolute;
   border: solid chocolate;
@@ -64,10 +67,12 @@
 th{
   color:#0080ff;
   font-size: 25px;
+  background-color: white;
 } 
 
 td{
   font-weight: bold;
+  background-color: white;
 }
 
 button{
