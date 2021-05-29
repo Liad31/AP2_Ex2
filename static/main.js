@@ -9,6 +9,8 @@ var isAnomaliesExist = false;
 var activeListElement = undefined;
 var anomaliesCellsObjects = [];
 var anomaliesGrapthArray = [];
+var algorithmForAnomalies;
+var correlatedPropertiesArray = [];
 var CSVFile;
 var waitinglist = [];
 
@@ -299,6 +301,11 @@ var waitinglist = [];
               accept: 'application/json;charset=UTF-8',
               data: JSON.stringify({"predict_data":  json }),
               success: function (json) {
+                console.log(json);
+                algorithmForAnomalies = json[0]["reason"]["algorithm"];
+                correlatedPropertiesArray = json[0]["reason"]["correlated_features"];
+                console.log(algorithmForAnomalies);
+                console.log(correlatedPropertiesArray);
                 let spans = changeToAppopriateAnomaliesFormatForTabel(json[0]["anomalies"]);
                 anomaliesGrapthArray = changeToAppopriateAnomaliesFormatForGraph(json[0]["anomalies"]);
                 updateTableAccordingAnomalies(JSON.stringify(spans));
@@ -600,6 +607,17 @@ var waitinglist = [];
                 alert(msg);
             },
         });
+        
+        if(correlatedPropertiesArray.length != 0)
+        {
+            console.log("not empty");
+            let reasonObject = document.getElementById("reason");
+            reasonObject.innerHTML = "reason: Algorithm=" + algorithmForAnomalies + ", Correlated Property=" + getCorrelatedProperty(correlatedPropertiesArray, element.textContent);
+        }
+        else
+        {
+            console.log("empty");
+        }
     }
 
     function changeToAppopriateAnomaliesFormatForTabel(anomaliesObject)
@@ -627,6 +645,23 @@ var waitinglist = [];
             newAnomaliesArray.push(JSON.parse(anomaliesObject[property]));
         }
         return newAnomaliesArray;
+    }
+
+    function getCorrelatedProperty(correlatedPropertiesArr, property)
+    {
+        for(let i = 0; i < correlatedPropertiesArr.length; ++i)
+        {
+            if(correlatedPropertiesArr[i][0] == property)
+            {
+                return correlatedPropertiesArr[i][1];
+            }
+
+            if(correlatedPropertiesArr[i][1] == property)
+            {
+                return correlatedPropertiesArr[i][0];
+            }
+        }
+        return undefined;
     }
 
     function submit() {
