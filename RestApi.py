@@ -51,7 +51,8 @@ def getAnomalies(modelId,dataId):
         model = pickle.loads(modelJson["pickle"])
         json = samples.find(dataQuery).next()["predict_data"]
         res=model.getAnomalySpan(json)
-        return {"anomalies":res,"reason":{"correlated_features":str(model.getCorrelatedFeatures()),"algorithm":modelJson["type"]}}
+        correlated=[x.split(',') for x in model.getCorrelatedFeatures()]
+        return {"anomalies":res,"reason":{"correlated_features":str(correlated),"algorithm":modelJson["type"]}}
     except:
         return "detection error"
     finally:
