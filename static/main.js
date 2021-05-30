@@ -246,7 +246,6 @@ var waitinglist = [];
      }
 
     function dragOverHandler(ev) {
-        console.log('File(s) in drop zone');
 
         // Prevent default behavior (Prevent file from being opened)
         ev.preventDefault();
@@ -301,11 +300,8 @@ var waitinglist = [];
               accept: 'application/json;charset=UTF-8',
               data: JSON.stringify({"predict_data":  json }),
               success: function (json) {
-                console.log(json);
                 algorithmForAnomalies = json[0]["reason"]["algorithm"];
                 correlatedPropertiesArray = json[0]["reason"]["correlated_features"];
-                console.log(algorithmForAnomalies);
-                console.log(correlatedPropertiesArray);
                 let spans = changeToAppopriateAnomaliesFormatForTabel(json[0]["anomalies"]);
                 anomaliesGrapthArray = changeToAppopriateAnomaliesFormatForGraph(json[0]["anomalies"]);
                 updateTableAccordingAnomalies(JSON.stringify(spans));
@@ -336,7 +332,6 @@ var waitinglist = [];
     async function dropHandler(ev) {
         //getArrayOfTableColumnObjectsAccordingProperty("B");
         var chosenCSVFile;
-        console.log('File(s) dropped');
 
         // Prevent default behavior (Prevent file from being opened)
         ev.preventDefault();
@@ -360,7 +355,6 @@ var waitinglist = [];
     }
 
     function removeDragData(ev) {
-        console.log('Removing drag data')
 
         if (ev.dataTransfer.items) {
             // Use DataTransferItemList interface to remove the drag data
@@ -436,11 +430,9 @@ var waitinglist = [];
             if(jsonObject[Object.keys(jsonObject)[i]].length != numberOfRows)
             {
                 alert("CSV FLIE NOT VALID!");
-                console.log("not valid");
                 return false;
             }
         }
-        console.log("valid");
         return true;
     }
 
@@ -610,13 +602,8 @@ var waitinglist = [];
         
         if(correlatedPropertiesArray.length != 0)
         {
-            console.log("not empty");
             let reasonObject = document.getElementById("reason");
             reasonObject.innerHTML = "reason: Algorithm=" + algorithmForAnomalies + ", Correlated Property=" + getCorrelatedProperty(correlatedPropertiesArray, element.textContent);
-        }
-        else
-        {
-            console.log("empty");
         }
     }
 
