@@ -10,6 +10,9 @@ import multiprocessing as mp
 from flask import render_template
 from AnomalyDetector import LinearAnomalyDetector,CircleAnomalyDetector
 import pickle
+import matplotlib.pyplot as plt
+import mpld3
+from graphCreator import plotGraph
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
@@ -48,8 +51,10 @@ def getAnomalies(modelId,dataId):
         model = pickle.loads(modelJson["pickle"])
         json = samples.find(dataQuery).next()["predict_data"]
         res=model.getAnomalySpan(json)
-        return {"anomalies":res,"reason":{"correlated_features":str(model.getCorrelatedFeatures()),"algorithm":modelJson["type"]}}
-    except:
+        correlated=[[i.strip() for i in str(x).split(',')] for x in model.getCorrelatedFeatures()]
+        return {"anomalies":res,"reason":{"correlated_features":correlated,"algorithm":modelJson["type"]}}
+    except Exception as e:
+        print(e)
         return "detection error"
     finally:
         samples.delete_one(dataQuery)
@@ -190,6 +195,16 @@ def get_anomalies():
     res=threadPool.starmap(getAnomalies,[(id,dataId)])
     return jsonify(res)
 
+@app.route("/api/graph", methods=["POST"])
+def postGraph():
+    ys = request.json["ys"]
+    spans = request.json["spans"]
+    plotGraph(ys, spans)
+    return '', 200
+
+@app.route("/api/get_graph", methods=["GET"])
+def getGraph():
+    return render_template('graph.html')
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=9876)

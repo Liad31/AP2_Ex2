@@ -3,7 +3,14 @@
 window.onload = init;
 let currentModel = 0;
 var isTrainTableExist = false;
+var isPropertyListExist = false;
 var goalOfLoading = "";
+var isAnomaliesExist = false;
+var activeListElement = undefined;
+var anomaliesCellsObjects = [];
+var anomaliesGrapthArray = [];
+var algorithmForAnomalies;
+var correlatedPropertiesArray = [];
 var CSVFile;
 var waitinglist = [];
 
@@ -25,6 +32,7 @@ var waitinglist = [];
             contentType: 'application/json;charset=UTF-8',
             success: function (data) {
               render(data);
+              search(); // so we will show only what in search bar
               if (waitinglist.length > 0){
                   for (var i = 0; i < data.length;++i) {
                       if (data[i]["status"] == "ready"){
@@ -36,6 +44,7 @@ var waitinglist = [];
                           snackBar.innerText = "model " + id.toString() + " is ready:)";
                           snackBar.className = "show";
                           setTimeout(function(){ snackBar.className = snackBar.className.replace("show", ""); }, 7000);
+
                          }
                       }
                   }
@@ -121,11 +130,30 @@ var waitinglist = [];
       }
     }
 
+    function search2() {
+      // Declare variables
+      let input, filter, ul, li, a, i, txtValue;
+      input = document.getElementById('myInput2');
+      filter = input.value;
+      ul = document.getElementById("headers-list");
+      let buttons = ul.getElementsByTagName('button');
+
+      // Loop through all list items, and hide those who don't match the search query
+      for (i = 0; i < buttons.length; i++) {
+        txtValue = buttons[i].innerHTML;
+        if (txtValue.indexOf(filter) > -1) {
+          buttons[i].style.display = "";
+        } else {
+          buttons[i].style.display = "none";
+        }
+      }
+    }
+
     function trainClick() {
         goalOfLoading = "train";
-        let trainButton = document.getElementById("train");
-        let findButton = document.getElementById("find");
-        let typesDiv = document.getElementById("types");
+        let trainButton = document.body.children[0].children[2].children[0];
+        let findButton = document.body.children[0].children[2].children[1];
+        let typesDiv = document.body.children[0].children[4]
 
         if (findButton.classList.contains("active")) {
             findButton.classList.remove("active");
@@ -141,9 +169,9 @@ var waitinglist = [];
 
     function findClick() {
         goalOfLoading = "detect";
-        let findButton = document.getElementById("find");
-        let trainButton = document.getElementById("train");
-        let typesDiv = document.getElementById("types");
+        let findButton = document.body.children[0].children[2].children[1];
+        let trainButton = document.body.children[0].children[2].children[0];
+        let typesDiv = document.body.children[0].children[4]
 
         if (trainButton.classList.contains("active")) {
             trainButton.classList.remove("active");
@@ -158,8 +186,8 @@ var waitinglist = [];
 
         function hybridClick() {
         goalOfLoading = "train hybrid";
-        let hybridButton = document.getElementById("hybrid");
-        let regressionButton = document.getElementById("regression");
+        let hybridButton = document.body.children[0].children[4].children[0];
+        let regressionButton = document.body.children[0].children[4].children[1];
 
         if (regressionButton.classList.contains("active")) {
             regressionButton.classList.remove("active");
@@ -173,8 +201,8 @@ var waitinglist = [];
 
     function regressionClick() {
         goalOfLoading = "train regression";
-        let regressionButton = document.getElementById("regression");
-        let hybridButton = document.getElementById("hybrid");
+        let regressionButton = document.body.children[0].children[4].children[1];
+        let hybridButton = document.body.children[0].children[4].children[0];
 
         if (hybridButton.classList.contains("active")) {
             hybridButton.classList.remove("active");
@@ -225,13 +253,14 @@ var waitinglist = [];
     }
 
     async function handleFile(chosenCSVFile){
-        if (chosenCSVFile.type != "text/csv") {
+        if (chosenCSVFile.type != "text/csv" && chosenCSVFile.type != "application/vnd.ms-excel") {
             alert("wrong file! not a csv file");
             return;
         }
         json = await CSVToJson(chosenCSVFile);
         if (isJsonOfCSVFileValid(JSON.stringify(json))){
             setTrainTable(JSON.stringify(json));
+            setListOfProperties(JSON.stringify(json));
         }
         if (goalOfLoading == "train hybrid") {
             $.ajax({
@@ -270,7 +299,36 @@ var waitinglist = [];
               dataType: "json",
               contentType: 'application/json;charset=UTF-8',
               accept: 'application/json;charset=UTF-8',
-              data: JSON.stringify({"predict_data":  json })
+              data: JSON.stringify({"predict_data":  json }),
+              success: function (json) {
+                console.log(json);
+                algorithmForAnomalies = json[0]["reason"]["algorithm"];
+                correlatedPropertiesArray = json[0]["reason"]["correlated_features"];
+                console.log(algorithmForAnomalies);
+                console.log(correlatedPropertiesArray);
+                let spans = changeToAppopriateAnomaliesFormatForTabel(json[0]["anomalies"]);
+                anomaliesGrapthArray = changeToAppopriateAnomaliesFormatForGraph(json[0]["anomalies"]);
+                updateTableAccordingAnomalies(JSON.stringify(spans));
+             },
+             error: function (jqXHR, exception) {
+                var msg = '';
+                if (jqXHR.status === 0) {
+                    msg = 'Not connect.\n Verify Network.';
+                } else if (jqXHR.status == 404) {
+                    msg = 'Requested page not found. [404]';
+                } else if (jqXHR.status == 500) {
+                    msg = 'Internal Server Error [500].';
+                } else if (exception === 'parsererror') {
+                    msg = 'Requested JSON parse failed.';
+                } else if (exception === 'timeout') {
+                    msg = 'Time out error.';
+                } else if (exception === 'abort') {
+                    msg = 'Ajax request aborted.';
+                } else {
+                    msg = 'Uncaught Error.\n' + jqXHR.responseText;
+                }
+                alert(msg);
+            },
             });
         }
     }
@@ -311,6 +369,16 @@ var waitinglist = [];
             // Use DataTransfer interface to remove the drag data
             ev.dataTransfer.clearData();
         }
+    }
+
+    function fileUploadClick() {
+        let fileInput = document.getElementById("fileInput");
+        fileInput.click();
+    }
+
+    function onUploadEventEnd() {
+        let fileInput = document.getElementById("fileInput");
+        CSVFile = fileInput.files[0];
     }
 
     function setTrainTable(jsonString)
@@ -414,10 +482,30 @@ var waitinglist = [];
         return arrayOfColumnObjects
     }
 
+    function getArrayOfTableColumnValuesAccordingProperty(propertyName)
+    {
+        let arrayOfColumnValues = []
+        const arrayOfColumnObjects = getArrayOfTableColumnObjectsAccordingProperty(propertyName);
+        if(arrayOfColumnObjects == -1)
+        {
+            return -1;
+        }
+
+        for(let i = 0; i < arrayOfColumnObjects.length; ++i)
+        {
+            arrayOfColumnValues.push(parseFloat(arrayOfColumnObjects[i].textContent))
+        }
+        return arrayOfColumnValues;
+    }
+
     function updateTableAccordingAnomalies(jsonString)
     {
-        const tableChildren = document.getElementById("train-table").children;
         const jsonObject = JSON.parse(jsonString);
+
+        if(isAnomaliesExist)
+        {
+            clearAnomalies();
+        }
 
         for(const property in jsonObject) {
             let propertyColumnObjects = getArrayOfTableColumnObjectsAccordingProperty(property);
@@ -425,11 +513,155 @@ var waitinglist = [];
             {
                 for(let i = 0; i < jsonObject[property].length; ++i)
                 {
+                    anomaliesCellsObjects.push(propertyColumnObjects[jsonObject[property][i]]);
                     propertyColumnObjects[jsonObject[property][i]].style.backgroundColor = "#ff3333";
                 }
             }
         }
 
+        isAnomaliesExist = true;
+    }
+
+    function clearAnomalies()
+    {
+        for(let i = 0; i < anomaliesCellsObjects.length; ++i)
+        {
+            anomaliesCellsObjects.pop().style.backgroundColor = "white";
+        }
+
+        isAnomaliesExist = false;
+    }
+
+    function setListOfProperties(jsonString)
+    {
+        const jsonObject = JSON.parse(jsonString);
+        const listObject = document.getElementById("headers-list");
+        
+        if(isPropertyListExist)
+        {
+            clearListOfProperties();
+        }
+
+        for(property in jsonObject)
+        {
+            let newButton = document.createElement("button");
+            newButton.type = "button";
+            newButton.className = "list-group-item list-group-item-action";
+            newButton.textContent = property;
+            newButton.onclick = function() {propertyListClick(this);};
+            listObject.appendChild(newButton);
+        }
+
+        isPropertyListExist = true;
+    }
+
+    function clearListOfProperties()
+    {
+        const listObject = document.getElementById("headers-list");
+        while (listObject.firstChild) {
+            listObject.removeChild(listObject.lastChild);
+        }
+
+        isPropertyListExist = false;
+    }
+
+    function propertyListClick(element)
+    {
+        //let anomalyValues;
+        if(activeListElement != undefined)
+        {
+            activeListElement.className = "list-group-item list-group-item-action";
+        }
+        element.className = "list-group-item list-group-item-action active";
+        activeListElement = element;
+        
+        let graphObject = document.getElementById("graph");
+
+        $.ajax({
+            type : 'POST',
+            url : '/api/graph',
+            dataType: "text",
+            contentType: 'application/json;charset=UTF-8',
+            accept: 'text/plain;charset=UTF-8',
+            data: JSON.stringify({"ys":  getArrayOfTableColumnValuesAccordingProperty(element.textContent), "spans": anomaliesGrapthArray}),
+            success: function () {
+                graphObject.src = window.location.href + "api/get_graph";
+            },
+            error: function (jqXHR, exception) {
+                var msg = '';
+                if (jqXHR.status === 0) {
+                    msg = 'Not connect.\n Verify Network.';
+                } else if (jqXHR.status == 404) {
+                    msg = 'Requested page not found. [404]';
+                } else if (jqXHR.status == 500) {
+                    msg = 'Internal Server Error [500].';
+                } else if (exception === 'parsererror') {
+                    msg = 'Requested JSON parse failed.';
+                } else if (exception === 'timeout') {
+                    msg = 'Time out error.';
+                } else if (exception === 'abort') {
+                    msg = 'Ajax request aborted.';
+                } else {
+                    msg = 'Uncaught Error.\n' + jqXHR.responseText;
+                }
+                alert(msg);
+            },
+        });
+        
+        if(correlatedPropertiesArray.length != 0)
+        {
+            console.log("not empty");
+            let reasonObject = document.getElementById("reason");
+            reasonObject.innerHTML = "reason: Algorithm=" + algorithmForAnomalies + ", Correlated Property=" + getCorrelatedProperty(correlatedPropertiesArray, element.textContent);
+        }
+        else
+        {
+            console.log("empty");
+        }
+    }
+
+    function changeToAppopriateAnomaliesFormatForTabel(anomaliesObject)
+    {
+        let newAnomaliesObject = {};
+        let borderArray = [];
+        for(property in anomaliesObject)
+        {
+            let anomaliesArray = [];
+            borderArray = JSON.parse(anomaliesObject[property][0]);
+            for(let i = borderArray[0]; i <= borderArray[1]; ++i)
+            {
+                anomaliesArray.push(i);
+            }
+            newAnomaliesObject[property] = anomaliesArray;
+        }
+        return newAnomaliesObject;
+    }
+
+    function changeToAppopriateAnomaliesFormatForGraph(anomaliesObject)
+    {
+        let newAnomaliesArray = [];
+        for(property in anomaliesObject)
+        {
+            newAnomaliesArray.push(JSON.parse(anomaliesObject[property]));
+        }
+        return newAnomaliesArray;
+    }
+
+    function getCorrelatedProperty(correlatedPropertiesArr, property)
+    {
+        for(let i = 0; i < correlatedPropertiesArr.length; ++i)
+        {
+            if(correlatedPropertiesArr[i][0] == property)
+            {
+                return correlatedPropertiesArr[i][1];
+            }
+
+            if(correlatedPropertiesArr[i][1] == property)
+            {
+                return correlatedPropertiesArr[i][0];
+            }
+        }
+        return undefined;
     }
 
     function submit() {

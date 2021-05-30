@@ -10,6 +10,16 @@
     background-color: aqua;
 }
 
+#graph{
+  width: 40%;
+  height: 400px;
+  margin-left: 25%;
+  position: relative;
+}
+
+body {
+}
+
 #upload{
     width: 65%;
     height: 100%;
@@ -28,6 +38,16 @@
   width: 30%;
 }
 
+#choose2 {
+  position: absolute;;
+  top: 5%;
+  height: 40%;
+  width: 20%;
+}
+
+#headers-list{
+  border: 1px solid chocolate;
+}
 .buttonHolder {
   margin-top: 2%;
   width: fit-content;
@@ -37,7 +57,7 @@
 
 .table-row{
   height: 40%;
-  width: 60%;
+  width: 65%;
   margin-top: 500px;
   position: absolute;
   border: solid chocolate;
@@ -46,13 +66,30 @@
 th{
   color:#0080ff;
   font-size: 25px;
+  background-color: white;
 } 
 
 td{
   font-weight: bold;
+  background-color: white;
+}
+
+button{
+  font-weight: bold;
 }
 
 #myInput {
+  background-image: url('/static/images/searchicon.png'); /* Add a search icon to input */
+  background-position: 10px 12px; /* Position the search icon */
+  background-repeat: no-repeat; /* Do not repeat the icon image */
+  width: 100%; /* Full-width */
+  font-size: 16px; /* Increase font-size */
+  padding: 12px 20px 12px 40px; /* Add some padding */
+  border: 1px solid #ddd; /* Add a grey border */
+  margin-bottom: 12px; /* Add some space below the input */
+}
+
+#myInput2 {
   background-image: url('/static/images/searchicon.png'); /* Add a search icon to input */
   background-position: 10px 12px; /* Position the search icon */
   background-repeat: no-repeat; /* Do not repeat the icon image */
