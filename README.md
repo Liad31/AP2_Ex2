@@ -21,11 +21,11 @@ There are 4 main Directories in the project:
 The main files are the src code files, like the RestApi.py (server), AnomalyDectetor.py, index.html, mycss.css, main.js (the last 3 for the web page)
 
 ## Development
-??????????????????????????????
-
+For this project we used python3.8+ and Flask for the server itself, we also used mongoDB for the database.  
+In order to reuse the anomaly detection code from the last semester we used pybind11, a library that can create CPython modules from c++ code.
 ## Installation and Running
 #### Installation
-in order to run the application you just have to download via pip the required libraries specified in requirements.txt
+in order to run the application you just have to download via pip the required libraries specified in requirements.txt (or alternatively by using `pip install -r requirements.txt `)
 #### Running
 for running the application, run Restapi.py and connect to the site via your browser (use localhost:9876)
 
