@@ -39,5 +39,5 @@ The web app uses the Rest-ful API server in order to handle client's requests in
 
 
 ## Video
-
+https://drive.google.com/file/d/1Cm9iHf-gSosEYemNh2OgENFBqDfNBGrz/view?usp=sharing
 
