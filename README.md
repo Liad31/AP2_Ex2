@@ -30,7 +30,11 @@ The main files are the src code files, like the RestApi.py (server), AnomalyDect
 
 ## Design
 You can see here our [UML diagram](https://online.visual-paradigm.com/app/diagrams/#G1ybPkRMBE0tr0iAb0gHeeCH25_nix_0HF)
-I am working on it
+#### Rest-ful API server
+For the server, we used flask in python. Each respone to a HTTP request is implemented as a method, that the server knows to invoke using the flask.
+The server uses code like the graph creator to create graph for the web client, anomaly detection code, and also uses MongoDB as database, to save the models and data about them. Also, the server uses a threadPool to handle requests.
+#### Web app
+The web app uses the Rest-ful API server in order to handle client's requests interactively. The web browser runs the JS code on the client's side, and when the client request to train or find anomalies, it sends a request to the server.
 
 
 ## Video
