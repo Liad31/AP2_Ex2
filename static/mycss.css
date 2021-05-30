@@ -155,7 +155,19 @@ button{
   background-color: chocolate;
   text-align: center;
 }
-
+#reason
+{
+border: 1px solid chocolate;
+color: darkblue;
+font-weight: bold;
+width: 40%;
+font-size: 1.1vw;
+height: 50px;
+margin-top: 1%;
+margin-left: 25%;
+vertical-align: middle;
+position: relative;
+}
 
 
 /* Animations to fade the snackbar in and out */
