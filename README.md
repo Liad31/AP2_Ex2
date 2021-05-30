@@ -8,6 +8,7 @@ You can connect the to the server directly using HTTP protocol, or using the web
 The web app is easy to use. You can upload a csv file, click on the train button and then on the submit button to start training a new model. The model will apear in the model list in red, once process of learning stopped it will become green, and you will be able the select it, upload another file, select the find anomlies button and then the submit button, and the selected model will look for anomlies. The data is shown on a graph on the left side of the page.
 #### Special Features ####
 1. When finding anomalies, they will be marked on the graph as red dots, and in the table as red cells.
+2. you can both drag files to the drop box and click on it what opens the files dialog.
 
 ## Files And Directories
 #### Directories
@@ -24,9 +25,9 @@ The main files are the src code files, like the RestApi.py (server), AnomalyDect
 
 ## Installation and Running
 #### Installation
-???????????????????????????????????????
+in order to run the application you just have to download via pip the required libraries specified in requirements.txt
 #### Running
-????????????????????????????????????????
+for running the application, run Restapi.py and connect to the site via your browser (use localhost:9876)
 
 ## Design
 You can see here our [UML diagram](https://online.visual-paradigm.com/app/diagrams/#G1ybPkRMBE0tr0iAb0gHeeCH25_nix_0HF)
