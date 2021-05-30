@@ -258,6 +258,9 @@ var waitinglist = [];
         }
         json = await CSVToJson(chosenCSVFile);
         if (isJsonOfCSVFileValid(JSON.stringify(json))){
+            correlatedPropertiesArray = [];
+            anomaliesGrapthArray = [];
+            anomaliesCellsObjects = [];
             setTrainTable(JSON.stringify(json));
             setListOfProperties(JSON.stringify(json));
         }
@@ -604,6 +607,11 @@ var waitinglist = [];
         {
             let reasonObject = document.getElementById("reason");
             reasonObject.innerHTML = "reason: Algorithm=" + algorithmForAnomalies + ", Correlated Property=" + getCorrelatedProperty(correlatedPropertiesArray, element.textContent);
+        }
+        else
+        {
+            let reasonObject = document.getElementById("reason");
+            reasonObject.innerHTML = "";
         }
     }
 
